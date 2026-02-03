@@ -7,6 +7,7 @@ import { RatingMeter, type RatingMeterHandle } from './components/RatingMeter';
 import { ExportControls } from './components/ExportControls';
 import { cn } from './lib/utils';
 import { Play } from 'lucide-react';
+import { SpeedInsights } from "@vercel/speed-insights/react"
 
 function App() {
   const [ranges, setRanges] = useState<RatingRange[]>([
@@ -191,6 +192,7 @@ function App() {
           © 2024 Rating Meter Generator - Free Online Tool
         </p>
       </footer>
+      <SpeedInsights />
     </div>
   );
 }
