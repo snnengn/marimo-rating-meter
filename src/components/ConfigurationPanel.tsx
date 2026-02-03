@@ -61,7 +61,6 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
 
     // Font family options
     const fontFamilies: { value: FontFamily; label: string }[] = [
-        { value: 'Inter', label: 'Inter' },
         { value: 'Roboto', label: 'Roboto' },
         { value: 'Poppins', label: 'Poppins' },
         { value: 'Open Sans', label: 'Open Sans' },
@@ -86,8 +85,6 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
         { value: 'Pacifico', label: 'Pacifico' },
         { value: 'Shadows Into Light', label: 'Shadows Into Light' },
         { value: 'Comic Sans MS', label: 'Comic Sans' },
-        { value: 'Courier New', label: 'Courier' },
-        { value: 'Georgia', label: 'Georgia' },
     ];
 
     // Font effect options
@@ -161,12 +158,12 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
     const inputBg = isLight ? 'bg-gray-50 border-gray-300 text-gray-900' : 'bg-black/20 border-white/10 text-white';
 
     return (
-        <div className="flex flex-col h-full bg-slate-900 text-white overflow-hidden border-r border-slate-800">
-            <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-                <h2 className="text-xl font-bold">{t.configuration}</h2>
+        <div className={cn("flex flex-col h-full bg-slate-800 text-white overflow-hidden border rounded-xl border-slate-800", panelBg)}>
+            <div className="p-4 border-slate-800 flex items-center justify-between">
+                <h2 className={cn("text-xl font-bold", textColor)}>{t.configuration}</h2>
             </div>
 
-            <div className={cn("space-y-6 p-6 rounded-xl border", panelBg)}>
+            <div className={cn("space-y-6 p-6", panelBg)}>
                 {/* Global Settings */}
                 <div className="space-y-4">
                     <div>

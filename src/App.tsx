@@ -189,7 +189,7 @@ function App() {
         isLight ? "border-gray-200 text-gray-500" : "border-white/10 text-gray-400"
       )}>
         <p className="text-sm">
-          © 2024 Rating Meter Generator - Free Online Tool
+          © 2026 Marimo Rating Meter Generator - Free Online Tool
         </p>
       </footer>
       <SpeedInsights />

@@ -20,6 +20,12 @@ export const ExportControls: React.FC<ExportControlsProps> = ({ canvas, onStartE
     const handleExport = async () => {
         if (!canvas || isExporting) return;
 
+        // Check for transparent MP4 export
+        if (settings.backgroundColor === 'transparent' && exportFormat === 'mp4') {
+            alert("MP4 format does not support transparent backgrounds. Please use WebM or choose a background color.");
+            return;
+        }
+
         setIsExporting(true);
         setProgress(0);
 
@@ -33,7 +39,7 @@ export const ExportControls: React.FC<ExportControlsProps> = ({ canvas, onStartE
             const width = canvas.width;
             const height = canvas.height;
             const duration = 3000; // 3 seconds matching animation
-            const fps = 30;
+            const fps = 60;
             const totalFrames = (duration / 1000) * fps;
 
             if (exportFormat === 'mp4') {
@@ -53,10 +59,10 @@ export const ExportControls: React.FC<ExportControlsProps> = ({ canvas, onStartE
                 });
 
                 videoEncoder.configure({
-                    codec: 'avc1.42001f',
+                    codec: 'avc1.640034', // High Profile Level 5.2
                     width,
                     height,
-                    bitrate: 2_000_000
+                    bitrate: 8_000_000 // 8 Mbps
                 });
 
                 const stream = canvas.captureStream(fps);
@@ -148,7 +154,10 @@ export const ExportControls: React.FC<ExportControlsProps> = ({ canvas, onStartE
             } else {
                 // FALLBACK for WebM
                 const stream = canvas.captureStream(fps);
-                const recorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
+                const recorder = new MediaRecorder(stream, {
+                    mimeType: 'video/webm; codecs=vp9',
+                    videoBitsPerSecond: 8_000_000 // 8 Mbps
+                });
                 const chunks: Blob[] = [];
 
                 recorder.ondataavailable = e => chunks.push(e.data);
