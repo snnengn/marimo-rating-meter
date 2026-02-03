@@ -1,11 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
-import type { MeterSettings, RatingRange, MeterSkin } from '../types';
+import type { MeterSettings, RatingRange, MeterSkin, NeedleType, CenterIcon, FontEffect } from '../types';
 
-interface RatingMeterProps {
-    ranges: RatingRange[];
-    settings: MeterSettings;
-    onCanvasReady?: (canvas: HTMLCanvasElement) => void;
-}
 
 // Enhanced skin palettes with more detail
 const SKIN_PALETTES: Record<MeterSkin, {
@@ -64,29 +59,251 @@ const SKIN_PALETTES: Record<MeterSkin, {
     }
 };
 
+// Helper function to draw different needle types
+const drawNeedle = (
+    ctx: CanvasRenderingContext2D,
+    needleType: NeedleType,
+    needleLength: number,
+    needleColor: string
+) => {
+    const shaftWidth = needleType === 'bold' ? 20 : needleType === 'thin' ? 6 : 14;
+    const shaftLength = needleLength - 22;
+
+    // Create gradient based on needle color
+    const grad = ctx.createLinearGradient(0, 0, needleLength, 0);
+    const baseColor = needleColor;
+    grad.addColorStop(0, adjustColorBrightness(baseColor, 30));
+    grad.addColorStop(0.5, baseColor);
+    grad.addColorStop(1, adjustColorBrightness(baseColor, 50));
+
+    ctx.beginPath();
+
+    switch (needleType) {
+        case 'arrow':
+            // Arrow shape with pointed tip
+            ctx.moveTo(0, -shaftWidth / 2);
+            ctx.lineTo(shaftLength, -shaftWidth / 2);
+            ctx.lineTo(shaftLength, -shaftWidth / 2 - 10);
+            ctx.lineTo(needleLength, 0);
+            ctx.lineTo(shaftLength, shaftWidth / 2 + 10);
+            ctx.lineTo(shaftLength, shaftWidth / 2);
+            ctx.lineTo(0, shaftWidth / 2);
+            break;
+
+        case 'classic':
+            // Classic tapered needle
+            ctx.moveTo(-15, 0);
+            ctx.lineTo(0, -shaftWidth / 2);
+            ctx.lineTo(needleLength - 10, -3);
+            ctx.lineTo(needleLength, 0);
+            ctx.lineTo(needleLength - 10, 3);
+            ctx.lineTo(0, shaftWidth / 2);
+            break;
+
+        case 'modern':
+            // Modern sleek needle with rounded edges
+            ctx.moveTo(0, -shaftWidth / 3);
+            ctx.quadraticCurveTo(needleLength * 0.3, -shaftWidth / 2, needleLength * 0.7, -4);
+            ctx.lineTo(needleLength, 0);
+            ctx.lineTo(needleLength * 0.7, 4);
+            ctx.quadraticCurveTo(needleLength * 0.3, shaftWidth / 2, 0, shaftWidth / 3);
+            break;
+
+        case 'thin':
+            // Thin elegant needle
+            ctx.moveTo(-5, 0);
+            ctx.lineTo(0, -shaftWidth / 2);
+            ctx.lineTo(needleLength, -1);
+            ctx.lineTo(needleLength + 5, 0);
+            ctx.lineTo(needleLength, 1);
+            ctx.lineTo(0, shaftWidth / 2);
+            break;
+
+        case 'bold':
+            // Bold thick needle
+            ctx.moveTo(-10, -shaftWidth / 3);
+            ctx.lineTo(needleLength * 0.8, -shaftWidth / 2);
+            ctx.lineTo(needleLength, 0);
+            ctx.lineTo(needleLength * 0.8, shaftWidth / 2);
+            ctx.lineTo(-10, shaftWidth / 3);
+            break;
+    }
+
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.shadowColor = needleColor;
+    ctx.shadowBlur = 15;
+    ctx.fill();
+
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = needleType === 'thin' ? 1.5 : 3;
+    ctx.shadowBlur = 0;
+    ctx.stroke();
+};
+
+// Helper function to draw center icon
+const drawCenterIcon = (
+    ctx: CanvasRenderingContext2D,
+    centerIcon: CenterIcon,
+    needleColor: string
+) => {
+    if (centerIcon === 'none') {
+        // Just draw a simple circle
+        ctx.beginPath();
+        ctx.arc(0, 0, 12, 0, Math.PI * 2);
+        const simpleGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 12);
+        simpleGrad.addColorStop(0, '#ffffff');
+        simpleGrad.addColorStop(1, '#888888');
+        ctx.fillStyle = simpleGrad;
+        ctx.fill();
+        return;
+    }
+
+    // Draw base circle
+    ctx.beginPath();
+    ctx.arc(0, 0, 18, 0, Math.PI * 2);
+
+    const baseGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 18);
+    baseGrad.addColorStop(0, adjustColorBrightness(needleColor, 60));
+    baseGrad.addColorStop(1, adjustColorBrightness(needleColor, 20));
+    ctx.fillStyle = baseGrad;
+    ctx.shadowColor = needleColor;
+    ctx.shadowBlur = 10;
+    ctx.fill();
+
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 3;
+    ctx.shadowBlur = 0;
+    ctx.stroke();
+
+    // Draw icon
+    ctx.fillStyle = adjustColorBrightness(needleColor, -30);
+    ctx.font = 'bold 20px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    let iconChar = '';
+    switch (centerIcon) {
+        case 'heart':
+            iconChar = '❤';
+            break;
+        case 'star':
+            iconChar = '⭐';
+            break;
+        case 'circle':
+            iconChar = '●';
+            break;
+        case 'diamond':
+            iconChar = '◆';
+            break;
+    }
+
+    ctx.fillText(iconChar, 0, centerIcon === 'heart' ? 2 : 0);
+};
+
+// Helper function to apply font effects
+const applyFontEffect = (
+    ctx: CanvasRenderingContext2D,
+    effect: FontEffect,
+    text: string,
+    x: number,
+    y: number,
+    fillColor: string
+) => {
+    switch (effect) {
+        case 'shadow':
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+            ctx.shadowBlur = 4;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            ctx.fillStyle = fillColor;
+            ctx.fillText(text, x, y);
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            ctx.shadowBlur = 0;
+            break;
+
+        case 'outline':
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.9)';
+            ctx.lineWidth = 4;
+            ctx.strokeText(text, x, y);
+            ctx.fillStyle = fillColor;
+            ctx.fillText(text, x, y);
+            break;
+
+        case 'glow':
+            ctx.shadowColor = fillColor;
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = fillColor;
+            ctx.fillText(text, x, y);
+            ctx.fillText(text, x, y); // Double for stronger glow
+            ctx.shadowBlur = 0;
+            break;
+
+        case 'emboss':
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.fillText(text, x + 2, y + 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.fillText(text, x - 1, y - 1);
+            ctx.fillStyle = fillColor;
+            ctx.fillText(text, x, y);
+            break;
+
+        case 'none':
+        default:
+            ctx.fillStyle = fillColor;
+            ctx.fillText(text, x, y);
+            break;
+    }
+};
+
+// Helper function to adjust color brightness
+const adjustColorBrightness = (color: string, percent: number): string => {
+    const num = parseInt(color.replace('#', ''), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = Math.min(255, Math.max(0, (num >> 16) + amt));
+    const G = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amt));
+    const B = Math.min(255, Math.max(0, (num & 0x0000FF) + amt));
+    return `#${((1 << 24) + (R << 16) + (G << 8) + B).toString(16).slice(1)}`;
+};
+
 interface RatingMeterProps {
     ranges: RatingRange[];
     settings: MeterSettings;
     onCanvasReady?: (canvas: HTMLCanvasElement) => void;
+    onScoreUpdate?: (score: number) => void;
     exportMode?: boolean;
     animationDuration?: number; // in ms
 }
 
-export const RatingMeter: React.FC<RatingMeterProps> = ({
+export interface RatingMeterHandle {
+    replayAnimation: () => void;
+}
+
+export const RatingMeter = React.forwardRef<RatingMeterHandle, RatingMeterProps>(({
     ranges,
     settings,
     onCanvasReady,
+    onScoreUpdate,
     exportMode = false,
     animationDuration = 5000
-}) => {
+}, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [animatedScore, setAnimatedScore] = useState(0);
     const animationStartRef = useRef<number>(0);
+    const [resetTrigger, setResetTrigger] = useState(0);
+
+    React.useImperativeHandle(ref, () => ({
+        replayAnimation: () => {
+            setAnimatedScore(0);
+            setResetTrigger(prev => prev + 1);
+        }
+    }));
 
     // Animation loop - time-based for export mode
     useEffect(() => {
         let animationFrameId: number;
-        const targetScore = settings.score;
+        const targetScore = settings.scoreValue;
 
         if (exportMode) {
             // Time-based animation for export (exactly fits duration)
@@ -110,7 +327,7 @@ export const RatingMeter: React.FC<RatingMeterProps> = ({
 
             animationFrameId = requestAnimationFrame(animate);
         } else {
-            // Normal interactive animation
+            // Replay animation if resetTrigger changes
             const animate = () => {
                 setAnimatedScore((prev) => {
                     const diff = targetScore - prev;
@@ -123,7 +340,12 @@ export const RatingMeter: React.FC<RatingMeterProps> = ({
         }
 
         return () => cancelAnimationFrame(animationFrameId);
-    }, [settings.score, exportMode, animationDuration]);
+    }, [settings.scoreValue, exportMode, animationDuration, resetTrigger]);
+
+    // Sync score to parent
+    useEffect(() => {
+        if (onScoreUpdate) onScoreUpdate(animatedScore);
+    }, [animatedScore, onScoreUpdate]);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -137,12 +359,16 @@ export const RatingMeter: React.FC<RatingMeterProps> = ({
         const width = canvas.width;
         const height = canvas.height;
         const centerX = width / 2;
-        const centerY = height * 0.75;
-        const radius = Math.min(width, height) * 0.55;
+        const centerY = settings.meterShape === 'tube' ? height * 0.5 : height * 0.65;
+        const radius = Math.min(width, height) * 0.4;
 
         // Clear canvas
-        ctx.fillStyle = settings.backgroundColor;
-        ctx.fillRect(0, 0, width, height);
+        if (settings.backgroundColor === 'transparent') {
+            ctx.clearRect(0, 0, width, height);
+        } else {
+            ctx.fillStyle = settings.backgroundColor;
+            ctx.fillRect(0, 0, width, height);
+        }
 
         // Filter valid ranges
         const validRanges = ranges.filter(r => r.max > r.min);
@@ -152,209 +378,314 @@ export const RatingMeter: React.FC<RatingMeterProps> = ({
         const maxVal = validRanges[validRanges.length - 1].max;
         const totalRange = maxVal - minVal;
 
-        // Arc configuration
-        const startRad = Math.PI;
-        const endRad = Math.PI * 2;
-        const totalAngle = endRad - startRad;
-
-        // Get skin settings
+        // Common settings and calculations
         const skinSettings = SKIN_PALETTES[settings.skin] || SKIN_PALETTES.pastel;
-
-        // Calculate active range
         const clampedScore = Math.max(minVal, Math.min(maxVal, animatedScore));
         const activeRange = validRanges.find(r => clampedScore >= r.min && clampedScore <= r.max);
 
-        // Draw each segment based on skin
-        validRanges.forEach((range, index) => {
-            const rangeStartRatio = (range.min - minVal) / totalRange;
-            const rangeEndRatio = (range.max - minVal) / totalRange;
+        // Custom font style based on settings
+        const customLabelStyle = `bold ${settings.fontSize}px "${settings.fontFamily}", sans-serif`;
 
-            const gap = 0.03;
-            const rangeStart = startRad + rangeStartRatio * totalAngle + gap;
-            const rangeEnd = startRad + rangeEndRatio * totalAngle - gap;
-            const midAngle = (rangeStart + rangeEnd) / 2;
+        if (settings.meterShape === 'tube') {
+            const tubeWidth = 60;
+            const tubeHeight = 280;
+            const startY = centerY + tubeHeight / 2; // Bottom
 
-            // Active range scaling effect
-            const isActive = activeRange?.id === range.id;
-            const scale = isActive ? 1.05 : 1.0;
+            // Draw ranges as vertical segments
+            let currentY = startY;
 
-            // Inner and Outer radius for block segments
-            const innerRad = (radius - 50) * scale;
-            const outerRad = (radius + 30) * scale;
+            validRanges.forEach((range, index) => {
+                const rangeHeight = (range.max - range.min) / totalRange * tubeHeight;
+                const segmentY = currentY - rangeHeight;
+                const segmentColor = range.color || skinSettings.colors[index % skinSettings.colors.length];
 
-            // Use range color or fallback to skin palette
-            const segmentColor = range.color || skinSettings.colors[index % skinSettings.colors.length];
+                // Draw segment background (dimmed)
+                ctx.fillStyle = segmentColor;
+                ctx.globalAlpha = 0.2;
+                if (settings.backgroundColor === 'transparent') ctx.globalAlpha = 0.4; // More visible on transparent
 
-            // Draw block segment
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, innerRad, rangeStart, rangeEnd, false);
-            ctx.arc(centerX, centerY, outerRad, rangeEnd, rangeStart, true);
-            ctx.closePath();
+                // Rounded corners for top/bottom segments
+                const isBottom = index === 0;
+                const isTop = index === validRanges.length - 1;
+                const cornerRadius = 10;
 
-            // Enhanced glow for active range
-            if (isActive) {
-                ctx.shadowColor = segmentColor;
-                ctx.shadowBlur = skinSettings.glowIntensity * 2;
-                ctx.globalAlpha = 1;
-            } else if (skinSettings.glow) {
-                ctx.shadowColor = segmentColor;
-                ctx.shadowBlur = skinSettings.glowIntensity;
-                ctx.globalAlpha = 0.85;
-            } else {
-                ctx.globalAlpha = 0.85;
-            }
-
-            ctx.fillStyle = segmentColor;
-            ctx.fill();
-
-            // Border
-            ctx.strokeStyle = skinSettings.borderColor;
-            ctx.lineWidth = isActive ? 4 : 3;
-            ctx.shadowBlur = 0;
-            ctx.stroke();
-
-            ctx.globalAlpha = 1;
-
-            // Enhanced decorations based on skin
-            if (skinSettings.decorations) {
-                const decorationCount = settings.skin === 'cyber' ? 8 : 5;
-
-                for (let i = 1; i < decorationCount; i++) {
-                    const ratio = i / decorationCount;
-                    const decAngle = rangeStart + (rangeEnd - rangeStart) * ratio;
-                    const deviation = Math.sin(i * 123) * 15;
-                    const decRadius = innerRad + (outerRad - innerRad) * 0.5 + deviation;
-                    const decX = centerX + Math.cos(decAngle) * decRadius;
-                    const decY = centerY + Math.sin(decAngle) * decRadius;
-
-                    // Different decoration styles per skin
-                    if (settings.skin === 'cyber') {
-                        // Cyber: small glowing squares
-                        ctx.save();
-                        ctx.translate(decX, decY);
-                        ctx.rotate(Math.PI / 4);
-                        ctx.fillStyle = 'rgba(0, 255, 255, 0.6)';
-                        ctx.shadowColor = '#00ffff';
-                        ctx.shadowBlur = 5;
-                        ctx.fillRect(-2, -2, 4, 4);
-                        ctx.restore();
-                    } else if (settings.skin === 'neon') {
-                        // Neon: bright dots with glow
-                        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                        ctx.shadowColor = '#ffffff';
-                        ctx.shadowBlur = 8;
-                        ctx.beginPath();
-                        ctx.arc(decX, decY, 3, 0, Math.PI * 2);
-                        ctx.fill();
+                const drawSegmentShape = () => {
+                    ctx.beginPath();
+                    if (isBottom && isTop) {
+                        ctx.roundRect(centerX - tubeWidth / 2, segmentY, tubeWidth, rangeHeight, cornerRadius);
+                    } else if (isBottom) {
+                        ctx.roundRect(centerX - tubeWidth / 2, segmentY, tubeWidth, rangeHeight, [0, 0, cornerRadius, cornerRadius]);
+                    } else if (isTop) {
+                        ctx.roundRect(centerX - tubeWidth / 2, segmentY, tubeWidth, rangeHeight, [cornerRadius, cornerRadius, 0, 0]);
                     } else {
-                        // Default: soft circles
-                        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-                        ctx.shadowBlur = 0;
-                        ctx.beginPath();
-                        ctx.arc(decX, decY, 3 + (i % 2) * 2, 0, Math.PI * 2);
-                        ctx.fill();
+                        ctx.rect(centerX - tubeWidth / 2, segmentY, tubeWidth, rangeHeight);
+                    }
+                };
+
+                drawSegmentShape();
+                ctx.fill();
+
+                // Draw Active Level (Bright)
+                ctx.globalAlpha = 1;
+                const activeHeight = Math.max(0, Math.min(range.max, animatedScore) - range.min) / (range.max - range.min) * rangeHeight;
+
+                if (activeHeight > 0) {
+                    ctx.fillStyle = segmentColor;
+
+                    // Add glow if explicit skin setting or if this is the currently active range
+                    const isActive = activeRange?.id === range.id;
+                    if (skinSettings.glow) {
+                        ctx.shadowColor = segmentColor;
+                        ctx.shadowBlur = isActive ? skinSettings.glowIntensity * 1.5 : skinSettings.glowIntensity * 0.5;
+                    }
+
+                    const activeY = currentY - activeHeight;
+
+                    ctx.save();
+                    drawSegmentShape(); // Reuse shape for clipping
+                    ctx.clip();
+
+                    ctx.fillRect(centerX - tubeWidth / 2, activeY, tubeWidth, activeHeight);
+                    ctx.restore();
+
+                    ctx.shadowBlur = 0;
+                }
+
+                // Segment Borders
+                ctx.strokeStyle = skinSettings.borderColor;
+                ctx.lineWidth = 2;
+                drawSegmentShape(); // Reuse shape for stroke
+                ctx.stroke();
+
+                // Range Labels (Left Side)
+                const labelY = currentY - rangeHeight / 2;
+                const isActiveRange = activeRange?.id === range.id;
+                const labelX = isActiveRange ? centerX - tubeWidth / 2 - 20 : centerX - tubeWidth / 2 - 15;
+
+                ctx.font = isActiveRange
+                    ? `bold ${Math.round(settings.fontSize * 1.0)}px "${settings.fontFamily}", sans-serif`
+                    : `bold ${Math.round(settings.fontSize * 0.8)}px "${settings.fontFamily}", sans-serif`;
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                applyFontEffect(ctx, settings.fontEffect, range.label, labelX, labelY, '#ffffff');
+
+                currentY -= rangeHeight;
+            });
+
+            // Needle/Indicator (Right Side)
+            const scoreRatio = (clampedScore - minVal) / totalRange;
+            const indicatorY = startY - scoreRatio * tubeHeight;
+
+            ctx.save();
+            ctx.translate(centerX + tubeWidth / 2 + 5, indicatorY);
+            ctx.rotate(Math.PI); // Point left
+            drawNeedle(ctx, settings.needleType, 50, settings.needleColor);
+            ctx.restore();
+
+            // Center Icon (Bottom)
+            ctx.save();
+            ctx.translate(centerX, startY + 30);
+            drawCenterIcon(ctx, settings.centerIcon, settings.needleColor);
+            ctx.restore();
+
+            // Title
+            ctx.font = `bold ${Math.round(settings.fontSize * 1.1)}px "${settings.fontFamily}", sans-serif`;
+            ctx.textAlign = 'center';
+            const titleColor = settings.theme === 'dark' ? '#fff' : '#000';
+            applyFontEffect(ctx, settings.fontEffect, settings.title, centerX, height * 0.08, titleColor);
+
+            // Score Value (near indicator)
+            ctx.font = `bold ${Math.round(settings.fontSize * 2.2)}px "${settings.fontFamily}", sans-serif`;
+            ctx.textAlign = 'left';
+            applyFontEffect(ctx, settings.fontEffect, Math.round(animatedScore).toString(), centerX + tubeWidth / 2 + 60, indicatorY, titleColor);
+
+
+        } else {
+            // GAUGE LOGIC 
+            // Arc configuration
+            const startRad = Math.PI;
+            const endRad = Math.PI * 2;
+            const totalAngle = endRad - startRad;
+
+            // Draw each segment based on skin
+            validRanges.forEach((range, index) => {
+                const rangeStartRatio = (range.min - minVal) / totalRange;
+                const rangeEndRatio = (range.max - minVal) / totalRange;
+
+                const gap = 0.03;
+                const rangeStart = startRad + rangeStartRatio * totalAngle + gap;
+                const rangeEnd = startRad + rangeEndRatio * totalAngle - gap;
+                const midAngle = (rangeStart + rangeEnd) / 2;
+
+                // Active range scaling effect
+                const isActive = activeRange?.id === range.id;
+                const scale = isActive ? 1.05 : 1.0;
+
+                // Inner and Outer radius for block segments
+                const innerRad = (radius - 50) * scale;
+                const outerRad = (radius + 30) * scale;
+
+                // Use range color or fallback to skin palette
+                const segmentColor = range.color || skinSettings.colors[index % skinSettings.colors.length];
+
+                // Draw block segment with rounded corners
+                const cornerRadius = 6;
+
+                // Calculate points for the rounded segment
+                const innerStartX = centerX + Math.cos(rangeStart) * innerRad;
+                const innerStartY = centerY + Math.sin(rangeStart) * innerRad;
+                const innerEndX = centerX + Math.cos(rangeEnd) * innerRad;
+                const innerEndY = centerY + Math.sin(rangeEnd) * innerRad;
+                const outerStartX = centerX + Math.cos(rangeStart) * outerRad;
+                const outerStartY = centerY + Math.sin(rangeStart) * outerRad;
+                const outerEndX = centerX + Math.cos(rangeEnd) * outerRad;
+                const outerEndY = centerY + Math.sin(rangeEnd) * outerRad;
+
+                ctx.beginPath();
+
+                // Start from inner arc start point
+                ctx.moveTo(innerStartX, innerStartY);
+
+                // Draw inner arc
+                ctx.arc(centerX, centerY, innerRad, rangeStart, rangeEnd, false);
+
+                // Draw rounded corner at inner-end to outer-end transition
+                const angle1 = Math.atan2(outerEndY - innerEndY, outerEndX - innerEndX);
+                ctx.arcTo(
+                    innerEndX + Math.cos(angle1) * cornerRadius,
+                    innerEndY + Math.sin(angle1) * cornerRadius,
+                    outerEndX,
+                    outerEndY,
+                    cornerRadius
+                );
+
+                // Draw outer arc (reversed)
+                ctx.arc(centerX, centerY, outerRad, rangeEnd, rangeStart, true);
+
+                // Draw rounded corner at outer-start to inner-start transition
+                const angle2 = Math.atan2(innerStartY - outerStartY, innerStartX - outerStartX);
+                ctx.arcTo(
+                    outerStartX + Math.cos(angle2) * cornerRadius,
+                    outerStartY + Math.sin(angle2) * cornerRadius,
+                    innerStartX,
+                    innerStartY,
+                    cornerRadius
+                );
+
+                ctx.closePath();
+
+                // Enhanced glow for active range
+                if (isActive) {
+                    ctx.shadowColor = segmentColor;
+                    ctx.shadowBlur = skinSettings.glowIntensity * 2;
+                    ctx.globalAlpha = 1;
+                } else if (skinSettings.glow) {
+                    ctx.shadowColor = segmentColor;
+                    ctx.shadowBlur = skinSettings.glowIntensity;
+                    ctx.globalAlpha = 0.85;
+                } else {
+                    ctx.globalAlpha = 0.85;
+                }
+
+                ctx.fillStyle = segmentColor;
+                ctx.fill();
+
+                // Border
+                ctx.strokeStyle = skinSettings.borderColor;
+                ctx.lineWidth = isActive ? 4 : 3;
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 0.5; // 50% border opacity
+                ctx.stroke();
+                ctx.globalAlpha = 1; // Reset opacity
+                ctx.globalAlpha = 1;
+
+                // Enhanced decorations based on skin
+                if (skinSettings.decorations) {
+                    const decorationCount = settings.skin === 'cyber' ? 8 : 5;
+
+                    for (let i = 1; i < decorationCount; i++) {
+                        const ratio = i / decorationCount;
+                        const decAngle = rangeStart + (rangeEnd - rangeStart) * ratio;
+                        const deviation = Math.sin(i * 123) * 15;
+                        const decRadius = innerRad + (outerRad - innerRad) * 0.5 + deviation;
+                        const decX = centerX + Math.cos(decAngle) * decRadius;
+                        const decY = centerY + Math.sin(decAngle) * decRadius;
+
+                        // Different decoration styles per skin
+                        if (settings.skin === 'cyber') {
+                            // Cyber: small glowing squares
+                            ctx.save();
+                            ctx.translate(decX, decY);
+                            ctx.rotate(Math.PI / 4);
+                            ctx.fillStyle = 'rgba(0, 255, 255, 0.6)';
+                            ctx.shadowColor = '#00ffff';
+                            ctx.shadowBlur = 5;
+                            ctx.fillRect(-2, -2, 4, 4);
+                            ctx.restore();
+                        } else if (settings.skin === 'neon') {
+                            // Neon: bright dots with glow
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                            ctx.shadowColor = '#ffffff';
+                            ctx.shadowBlur = 8;
+                            ctx.beginPath();
+                            ctx.arc(decX, decY, 3, 0, Math.PI * 2);
+                            ctx.fill();
+                        } else {
+                            // Default: soft circles
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                            ctx.shadowBlur = 0;
+                            ctx.beginPath();
+                            ctx.arc(decX, decY, 3 + (i % 2) * 2, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
                     }
                 }
-            }
-            ctx.shadowBlur = 0;
+                ctx.shadowBlur = 0;
 
-            // Labels with better readability
-            const labelRadius = radius - 10;
-            const labelX = centerX + Math.cos(midAngle) * labelRadius;
-            const labelY = centerY + Math.sin(midAngle) * labelRadius;
+                // Labels with custom font and effects - scale with segment
+                const labelRadius = isActive ? radius + 5 : radius - 10;
+                const labelX = centerX + Math.cos(midAngle) * labelRadius;
+                const labelY = centerY + Math.sin(midAngle) * labelRadius;
 
-            // Text shadow for better readability
-            ctx.font = skinSettings.labelStyle;
+                ctx.font = isActive
+                    ? `bold ${Math.round(settings.fontSize * 1.25)}px "${settings.fontFamily}", sans-serif`
+                    : customLabelStyle;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.shadowBlur = 0; // Clear any residual shadow from segments
+
+                // Apply font effect
+                applyFontEffect(ctx, settings.fontEffect, range.label, labelX, labelY, '#ffffff');
+            });
+
+            // Title with custom font and effect
+            ctx.font = `bold ${Math.round(settings.fontSize * 1.1)}px "${settings.fontFamily}", sans-serif`;
             ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
+            const titleColor = settings.theme === 'dark' ? '#fff' : '#000';
+            applyFontEffect(ctx, settings.fontEffect, settings.title, centerX, height * 0.05, titleColor);
 
-            // Outline for text readability
-            ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
-            ctx.lineWidth = 4;
-            ctx.strokeText(range.label, labelX, labelY);
+            // Score with custom font and effect
+            ctx.font = `bold ${Math.round(settings.fontSize * 2.2)}px "${settings.fontFamily}", sans-serif`;
+            applyFontEffect(ctx, settings.fontEffect, Math.round(animatedScore).toString(), centerX, centerY + 65, titleColor);
 
-            // Main text
-            ctx.fillStyle = '#ffffff';
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-            ctx.shadowBlur = 4;
-            ctx.fillText(range.label, labelX, labelY);
-            ctx.shadowBlur = 0;
-        });
 
-        // Title
-        ctx.fillStyle = settings.theme === 'dark' ? '#fff' : '#000';
-        ctx.font = 'bold 22px Inter, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(settings.title, centerX, height * 0.05);
+            // Needle
+            const scoreRatio = (clampedScore - minVal) / totalRange;
+            const needleAngle = startRad + scoreRatio * totalAngle;
+            const needleLength = radius - 65;
 
-        // Score (moved below needle pivot)
-        ctx.font = 'bold 44px Inter, sans-serif';
-        ctx.fillText(Math.round(animatedScore).toString(), centerX, centerY + 60);
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(needleAngle);
 
-        // Needle
-        const scoreRatio = (clampedScore - minVal) / totalRange;
-        const needleAngle = startRad + scoreRatio * totalAngle;
-        const needleLength = radius - 65;
+            // Draw needle based on type
+            drawNeedle(ctx, settings.needleType, needleLength, settings.needleColor);
 
-        ctx.save();
-        ctx.translate(centerX, centerY);
-        ctx.rotate(needleAngle);
+            // Draw center icon
+            drawCenterIcon(ctx, settings.centerIcon, settings.needleColor);
 
-        // Draw arrow shaft (bigger and thicker)
-        const shaftWidth = 14;
-        const shaftLength = needleLength - 22;
-
-        ctx.beginPath();
-        ctx.moveTo(0, -shaftWidth / 2);
-        ctx.lineTo(shaftLength, -shaftWidth / 2);
-        ctx.lineTo(shaftLength, -shaftWidth / 2 - 10);
-        ctx.lineTo(needleLength, 0);
-        ctx.lineTo(shaftLength, shaftWidth / 2 + 10);
-        ctx.lineTo(shaftLength, shaftWidth / 2);
-        ctx.lineTo(0, shaftWidth / 2);
-        ctx.closePath();
-
-        // Gradient
-        const grad = ctx.createLinearGradient(0, 0, needleLength, 0);
-        grad.addColorStop(0, '#ff9eb3');
-        grad.addColorStop(0.5, '#ff8aa0');
-        grad.addColorStop(1, '#ffb3c1');
-        ctx.fillStyle = grad;
-
-        ctx.shadowColor = '#ff6b8b';
-        ctx.shadowBlur = 15;
-        ctx.fill();
-
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 3;
-        ctx.shadowBlur = 0;
-        ctx.stroke();
-
-        // Heart base
-        ctx.beginPath();
-        ctx.arc(-10, 0, 18, 0, Math.PI * 2);
-
-        const heartGrad = ctx.createRadialGradient(-10, 0, 0, -10, 0, 18);
-        heartGrad.addColorStop(0, '#ffb3c1');
-        heartGrad.addColorStop(1, '#ff8aa0');
-        ctx.fillStyle = heartGrad;
-        ctx.shadowColor = '#ff6b8b';
-        ctx.shadowBlur = 10;
-        ctx.fill();
-
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 3;
-        ctx.shadowBlur = 0;
-        ctx.stroke();
-
-        // Heart icon
-        ctx.fillStyle = '#ff4d6d';
-        ctx.font = 'bold 20px serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('❤', -10, 0);
-
-        ctx.restore();
+            ctx.restore();
+        }
 
     }, [ranges, settings, animatedScore]);
 
@@ -363,9 +694,9 @@ export const RatingMeter: React.FC<RatingMeterProps> = ({
             <canvas
                 ref={canvasRef}
                 width={600}
-                height={400}
+                height={600}
                 className="max-w-full h-auto rounded-lg shadow-lg"
             />
         </div>
     );
-};
+});

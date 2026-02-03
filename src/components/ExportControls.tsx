@@ -1,64 +1,182 @@
 import React, { useState } from 'react';
 import { Download, Film, Image, Video } from 'lucide-react';
+import * as Mp4Muxer from 'mp4-muxer';
+import { encode } from 'modern-gif';
+import { translations } from '../types';
+import type { MeterSettings } from '../types';
 
 interface ExportControlsProps {
     canvas: HTMLCanvasElement | null;
     onStartExport: (format: 'webm' | 'mp4' | 'gif') => void;
+    settings: MeterSettings;
 }
 
-export const ExportControls: React.FC<ExportControlsProps> = ({ canvas, onStartExport }) => {
+export const ExportControls: React.FC<ExportControlsProps> = ({ canvas, onStartExport, settings }) => {
+    const t = translations[settings.language].ui;
     const [isExporting, setIsExporting] = useState(false);
     const [exportFormat, setExportFormat] = useState<'webm' | 'mp4' | 'gif'>('webm');
+    const [progress, setProgress] = useState(0);
 
     const handleExport = async () => {
         if (!canvas || isExporting) return;
 
         setIsExporting(true);
+        setProgress(0);
 
         // Notify parent to start export mode
         onStartExport(exportFormat);
 
-        // Wait for animation to start
+        // Wait a bit for animation reset
         await new Promise(r => setTimeout(r, 200));
 
         try {
-            const stream = canvas.captureStream(30);
-            const mimeType = 'video/webm; codecs=vp9';
-            const recorder = new MediaRecorder(stream, { mimeType });
+            const width = canvas.width;
+            const height = canvas.height;
+            const duration = 3000; // 3 seconds matching animation
+            const fps = 30;
+            const totalFrames = (duration / 1000) * fps;
 
-            const chunks: Blob[] = [];
-            recorder.ondataavailable = (e) => chunks.push(e.data);
+            if (exportFormat === 'mp4') {
+                const muxer = new Mp4Muxer.Muxer({
+                    target: new Mp4Muxer.ArrayBufferTarget(),
+                    video: {
+                        codec: 'avc',
+                        width,
+                        height
+                    },
+                    fastStart: 'in-memory'
+                });
 
-            await new Promise<void>((resolve) => {
+                const videoEncoder = new VideoEncoder({
+                    output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+                    error: (e) => console.error(e)
+                });
+
+                videoEncoder.configure({
+                    codec: 'avc1.42001f',
+                    width,
+                    height,
+                    bitrate: 2_000_000
+                });
+
+                const stream = canvas.captureStream(fps);
+                const track = stream.getVideoTracks()[0];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const processor = new (window as any).MediaStreamTrackProcessor({ track });
+                const reader = processor.readable.getReader();
+
+                const safeRead = async () => {
+                    const timeoutPromise = new Promise<{ value?: any; done: boolean }>((resolve) => {
+                        setTimeout(() => resolve({ done: true }), 500); // 500ms timeout
+                    });
+                    const readPromise = reader.read();
+                    return Promise.race([readPromise, timeoutPromise]);
+                };
+
+                let frameCount = 0;
+
+                while (frameCount < totalFrames) {
+                    const result = await safeRead();
+                    if (result.done) break;
+
+                    const frame = result.value;
+                    // timestamp in microseconds
+                    const timestamp = frameCount * (1000000 / fps);
+
+                    const videoFrame = new VideoFrame(frame, { timestamp });
+                    videoEncoder.encode(videoFrame, { keyFrame: frameCount % 30 === 0 });
+                    videoFrame.close();
+                    frame.close();
+
+                    frameCount++;
+                    setProgress(Math.round((frameCount / totalFrames) * 100));
+                }
+
+                await videoEncoder.flush();
+                muxer.finalize();
+                const { buffer } = muxer.target;
+                downloadBlob(new Blob([buffer], { type: 'video/mp4' }), 'mp4');
+
+                reader.cancel();
+                track.stop();
+
+            } else if (exportFormat === 'gif') {
+                const frames: ImageBitmap[] = [];
+                const stream = canvas.captureStream(fps);
+                const track = stream.getVideoTracks()[0];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const processor = new (window as any).MediaStreamTrackProcessor({ track });
+                const reader = processor.readable.getReader();
+
+                const safeRead = async () => {
+                    const timeoutPromise = new Promise<{ value?: any; done: boolean }>((resolve) => {
+                        setTimeout(() => resolve({ done: true }), 500); // 500ms timeout
+                    });
+                    const readPromise = reader.read();
+                    return Promise.race([readPromise, timeoutPromise]);
+                };
+
+                let frameCount = 0;
+
+                while (frameCount < totalFrames) {
+                    const result = await safeRead();
+                    if (result.done) break;
+
+                    const frame = result.value;
+                    const bitmap = await createImageBitmap(frame);
+                    frames.push(bitmap);
+                    frame.close();
+
+                    frameCount++;
+                    setProgress(Math.round((frameCount / totalFrames) * 100));
+                }
+
+                reader.cancel();
+                track.stop();
+
+                const buffer = await encode({
+                    width,
+                    height,
+                    frames: frames.map(f => ({ data: f, delay: 1000 / fps })),
+                });
+
+                downloadBlob(new Blob([buffer], { type: 'image/gif' }), 'gif');
+
+                // Cleanup bitmaps
+                frames.forEach(f => f.close());
+
+            } else {
+                // FALLBACK for WebM
+                const stream = canvas.captureStream(fps);
+                const recorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
+                const chunks: Blob[] = [];
+
+                recorder.ondataavailable = e => chunks.push(e.data);
                 recorder.onstop = () => {
                     const blob = new Blob(chunks, { type: 'video/webm' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-
-                    // File extension based on format
-                    const ext = exportFormat === 'gif' ? 'webm' : exportFormat;
-                    a.download = `rating-meter-${Date.now()}.${ext}`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    resolve();
+                    downloadBlob(blob, 'webm');
                 };
 
                 recorder.start();
-                // Record for 3.3 seconds to capture full animation
-                setTimeout(() => {
-                    recorder.stop();
-                }, 3300);
-            });
-
-            if (exportFormat === 'mp4') {
-                alert('MP4 dönüştürme için ffmpeg.wasm gerekli. WebM olarak indirildi, online converter ile MP4\'e çevirebilirsiniz.');
+                setTimeout(() => recorder.stop(), duration + 100);
             }
+
         } catch (error) {
             console.error('Export failed:', error);
+            alert('Export failed. See console for details.');
         } finally {
             setIsExporting(false);
+            setProgress(0);
         }
+    };
+
+    const downloadBlob = (blob: Blob, ext: string) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `rating-meter-${Date.now()}.${ext}`;
+        a.click();
+        URL.revokeObjectURL(url);
     };
 
     return (
@@ -86,10 +204,10 @@ export const ExportControls: React.FC<ExportControlsProps> = ({ canvas, onStartE
             <button
                 onClick={handleExport}
                 disabled={isExporting || !canvas}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl w-full"
             >
                 <Download size={20} />
-                {isExporting ? 'Oluşturuluyor... (3 sn)' : `Export ${exportFormat.toUpperCase()}`}
+                {isExporting ? `${t.processing} ${progress}%` : `${t.exportButton} ${exportFormat.toUpperCase()}`}
             </button>
         </div>
     );

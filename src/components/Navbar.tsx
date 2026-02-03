@@ -74,7 +74,11 @@ export const Navbar: React.FC<NavbarProps> = ({ settings, setSettings }) => {
                                 aria-expanded={langDropdownOpen}
                             >
                                 <Globe size={18} />
-                                <span className="text-lg">{translations[settings.language].flag}</span>
+                                <img
+                                    src={`https://flagcdn.com/w40/${translations[settings.language].code}.png`}
+                                    alt={translations[settings.language].flag}
+                                    className="w-5 h-3.5 object-contain rounded-sm"
+                                />
                                 <ChevronDown size={16} className={cn("transition-transform", langDropdownOpen && "rotate-180")} />
                             </button>
 
@@ -107,7 +111,11 @@ export const Navbar: React.FC<NavbarProps> = ({ settings, setSettings }) => {
                                                                 : "hover:bg-white/10 text-gray-300"
                                                     )}
                                                 >
-                                                    <span>{translations[lang].flag}</span>
+                                                    <img
+                                                        src={`https://flagcdn.com/w40/${translations[lang].code}.png`}
+                                                        alt={translations[lang].flag}
+                                                        className="w-5 h-3.5 object-contain rounded-sm"
+                                                    />
                                                     <span className="truncate">{translations[lang].name}</span>
                                                 </button>
                                             ))}
