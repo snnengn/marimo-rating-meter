@@ -1,0 +1,572 @@
+export interface RatingRange {
+    id: string;
+    min: number;
+    max: number;
+    label: string;
+    color: string;
+}
+
+export type MeterSkin = 'pastel' | 'neon' | 'retro' | 'minimal' | 'cyber';
+
+export type Language = 'en' | 'zh' | 'hi' | 'es' | 'ar' | 'bn' | 'pt' | 'ru' | 'ja' | 'tr' | 'fr' | 'de' | 'ko' | 'vi' | 'it' | 'fa' | 'pl' | 'uk' | 'nl' | 'th';
+
+export interface MeterSettings {
+    title: string;
+    score: number;
+    maxScore: number;
+    theme: 'light' | 'dark';
+    skin: MeterSkin;
+    backgroundColor: string;
+    language: Language;
+}
+
+interface TranslationUI {
+    title: string;
+    subtitle: string;
+    preview: string;
+    meterTitle: string;
+    meterSkin: string;
+    theme: string;
+    light: string;
+    dark: string;
+    language: string;
+    scoreValue: string;
+    maxScore: string;
+    backgroundColor: string;
+    ratingRanges: string;
+    addRange: string;
+    export: string;
+    exporting: string;
+    exportInfo: string;
+    low: string;
+    medium: string;
+    high: string;
+}
+
+// Translations for top 20 most spoken languages
+export const translations: Record<Language, {
+    name: string;
+    flag: string;
+    ui: TranslationUI;
+}> = {
+    en: {
+        name: 'English',
+        flag: '🇬🇧',
+        ui: {
+            title: 'Rating Meter Generator',
+            subtitle: 'Create, customize, and export your rating meter animations.',
+            preview: 'Preview',
+            meterTitle: 'Meter Title',
+            meterSkin: 'Meter Skin',
+            theme: 'Theme',
+            light: 'Light',
+            dark: 'Dark',
+            language: 'Language',
+            scoreValue: 'Score Value',
+            maxScore: 'Max Score',
+            backgroundColor: 'Background Color',
+            ratingRanges: 'Rating Ranges',
+            addRange: 'Add Range',
+            export: 'Export',
+            exporting: 'Exporting...',
+            exportInfo: 'Export creates a 3-second animation from 0 to target score.',
+            low: 'Low',
+            medium: 'Medium',
+            high: 'High',
+        }
+    },
+    zh: {
+        name: '中文',
+        flag: '🇨🇳',
+        ui: {
+            title: '评分仪表生成器',
+            subtitle: '创建、自定义和导出您的评分仪表动画。',
+            preview: '预览',
+            meterTitle: '仪表标题',
+            meterSkin: '仪表皮肤',
+            theme: '主题',
+            light: '浅色',
+            dark: '深色',
+            language: '语言',
+            scoreValue: '分数值',
+            maxScore: '最高分',
+            backgroundColor: '背景颜色',
+            ratingRanges: '评分范围',
+            addRange: '添加范围',
+            export: '导出',
+            exporting: '导出中...',
+            exportInfo: '导出将创建从0到目标分数的3秒动画。',
+            low: '低',
+            medium: '中',
+            high: '高',
+        }
+    },
+    hi: {
+        name: 'हिन्दी',
+        flag: '🇮🇳',
+        ui: {
+            title: 'रेटिंग मीटर जनरेटर',
+            subtitle: 'अपने रेटिंग मीटर एनिमेशन बनाएं, कस्टमाइज़ करें और एक्सपोर्ट करें।',
+            preview: 'पूर्वावलोकन',
+            meterTitle: 'मीटर शीर्षक',
+            meterSkin: 'मीटर स्किन',
+            theme: 'थीम',
+            light: 'लाइट',
+            dark: 'डार्क',
+            language: 'भाषा',
+            scoreValue: 'स्कोर मूल्य',
+            maxScore: 'अधिकतम स्कोर',
+            backgroundColor: 'पृष्ठभूमि रंग',
+            ratingRanges: 'रेटिंग रेंज',
+            addRange: 'रेंज जोड़ें',
+            export: 'निर्यात',
+            exporting: 'निर्यात हो रहा है...',
+            exportInfo: '0 से लक्ष्य स्कोर तक 3 सेकंड का एनिमेशन बनाता है।',
+            low: 'कम',
+            medium: 'मध्यम',
+            high: 'उच्च',
+        }
+    },
+    es: {
+        name: 'Español',
+        flag: '🇪🇸',
+        ui: {
+            title: 'Generador de Medidor',
+            subtitle: 'Crea, personaliza y exporta tus animaciones de medidor.',
+            preview: 'Vista previa',
+            meterTitle: 'Título del Medidor',
+            meterSkin: 'Skin del Medidor',
+            theme: 'Tema',
+            light: 'Claro',
+            dark: 'Oscuro',
+            language: 'Idioma',
+            scoreValue: 'Valor del Puntaje',
+            maxScore: 'Puntaje Máximo',
+            backgroundColor: 'Color de Fondo',
+            ratingRanges: 'Rangos de Calificación',
+            addRange: 'Agregar Rango',
+            export: 'Exportar',
+            exporting: 'Exportando...',
+            exportInfo: 'La exportación crea una animación de 3 segundos.',
+            low: 'Bajo',
+            medium: 'Medio',
+            high: 'Alto',
+        }
+    },
+    ar: {
+        name: 'العربية',
+        flag: '🇸🇦',
+        ui: {
+            title: 'مولد مقياس التقييم',
+            subtitle: 'أنشئ وخصص وصدر رسوم متحركة لمقياس التقييم.',
+            preview: 'معاينة',
+            meterTitle: 'عنوان المقياس',
+            meterSkin: 'مظهر المقياس',
+            theme: 'المظهر',
+            light: 'فاتح',
+            dark: 'داكن',
+            language: 'اللغة',
+            scoreValue: 'قيمة النتيجة',
+            maxScore: 'أقصى نتيجة',
+            backgroundColor: 'لون الخلفية',
+            ratingRanges: 'نطاقات التقييم',
+            addRange: 'إضافة نطاق',
+            export: 'تصدير',
+            exporting: 'جاري التصدير...',
+            exportInfo: 'يُنشئ التصدير رسماً متحركاً مدته 3 ثوانٍ.',
+            low: 'منخفض',
+            medium: 'متوسط',
+            high: 'عالي',
+        }
+    },
+    bn: {
+        name: 'বাংলা',
+        flag: '🇧🇩',
+        ui: {
+            title: 'রেটিং মিটার জেনারেটর',
+            subtitle: 'আপনার রেটিং মিটার অ্যানিমেশন তৈরি, কাস্টমাইজ এবং এক্সপোর্ট করুন।',
+            preview: 'পূর্বরূপ',
+            meterTitle: 'মিটার শিরোনাম',
+            meterSkin: 'মিটার স্কিন',
+            theme: 'থিম',
+            light: 'হালকা',
+            dark: 'গাঢ়',
+            language: 'ভাষা',
+            scoreValue: 'স্কোর মান',
+            maxScore: 'সর্বোচ্চ স্কোর',
+            backgroundColor: 'পটভূমির রঙ',
+            ratingRanges: 'রেটিং রেঞ্জ',
+            addRange: 'রেঞ্জ যোগ করুন',
+            export: 'রপ্তানি',
+            exporting: 'রপ্তানি হচ্ছে...',
+            exportInfo: '0 থেকে টার্গেট স্কোর পর্যন্ত 3 সেকেন্ডের অ্যানিমেশন তৈরি করে।',
+            low: 'কম',
+            medium: 'মাঝারি',
+            high: 'উচ্চ',
+        }
+    },
+    pt: {
+        name: 'Português',
+        flag: '🇧🇷',
+        ui: {
+            title: 'Gerador de Medidor',
+            subtitle: 'Crie, personalize e exporte suas animações de medidor.',
+            preview: 'Visualização',
+            meterTitle: 'Título do Medidor',
+            meterSkin: 'Skin do Medidor',
+            theme: 'Tema',
+            light: 'Claro',
+            dark: 'Escuro',
+            language: 'Idioma',
+            scoreValue: 'Valor da Pontuação',
+            maxScore: 'Pontuação Máxima',
+            backgroundColor: 'Cor de Fundo',
+            ratingRanges: 'Faixas de Avaliação',
+            addRange: 'Adicionar Faixa',
+            export: 'Exportar',
+            exporting: 'Exportando...',
+            exportInfo: 'A exportação cria uma animação de 3 segundos.',
+            low: 'Baixo',
+            medium: 'Médio',
+            high: 'Alto',
+        }
+    },
+    ru: {
+        name: 'Русский',
+        flag: '🇷🇺',
+        ui: {
+            title: 'Генератор рейтинга',
+            subtitle: 'Создавайте, настраивайте и экспортируйте анимации рейтинга.',
+            preview: 'Предпросмотр',
+            meterTitle: 'Заголовок',
+            meterSkin: 'Скин',
+            theme: 'Тема',
+            light: 'Светлая',
+            dark: 'Тёмная',
+            language: 'Язык',
+            scoreValue: 'Значение',
+            maxScore: 'Максимум',
+            backgroundColor: 'Цвет фона',
+            ratingRanges: 'Диапазоны',
+            addRange: 'Добавить',
+            export: 'Экспорт',
+            exporting: 'Экспорт...',
+            exportInfo: 'Экспорт создаёт 3-секундную анимацию.',
+            low: 'Низкий',
+            medium: 'Средний',
+            high: 'Высокий',
+        }
+    },
+    ja: {
+        name: '日本語',
+        flag: '🇯🇵',
+        ui: {
+            title: 'レーティングメーター',
+            subtitle: 'レーティングメーターアニメーションを作成、カスタマイズ、エクスポート。',
+            preview: 'プレビュー',
+            meterTitle: 'メータータイトル',
+            meterSkin: 'メータースキン',
+            theme: 'テーマ',
+            light: 'ライト',
+            dark: 'ダーク',
+            language: '言語',
+            scoreValue: 'スコア値',
+            maxScore: '最大スコア',
+            backgroundColor: '背景色',
+            ratingRanges: '評価範囲',
+            addRange: '範囲追加',
+            export: 'エクスポート',
+            exporting: 'エクスポート中...',
+            exportInfo: '0から目標スコアまでの3秒アニメーションを作成。',
+            low: '低',
+            medium: '中',
+            high: '高',
+        }
+    },
+    tr: {
+        name: 'Türkçe',
+        flag: '🇹🇷',
+        ui: {
+            title: 'Değerlendirme Ölçer',
+            subtitle: 'Değerlendirme ölçer animasyonlarınızı oluşturun, özelleştirin ve dışa aktarın.',
+            preview: 'Önizleme',
+            meterTitle: 'Ölçer Başlığı',
+            meterSkin: 'Ölçer Teması',
+            theme: 'Tema',
+            light: 'Açık',
+            dark: 'Koyu',
+            language: 'Dil',
+            scoreValue: 'Skor Değeri',
+            maxScore: 'Maksimum Skor',
+            backgroundColor: 'Arka Plan Rengi',
+            ratingRanges: 'Değerlendirme Aralıkları',
+            addRange: 'Aralık Ekle',
+            export: 'Dışa Aktar',
+            exporting: 'Oluşturuluyor...',
+            exportInfo: '0\'dan hedef skora 3 saniyelik animasyon oluşturur.',
+            low: 'Düşük',
+            medium: 'Orta',
+            high: 'Yüksek',
+        }
+    },
+    fr: {
+        name: 'Français',
+        flag: '🇫🇷',
+        ui: {
+            title: 'Générateur de Jauge',
+            subtitle: 'Créez, personnalisez et exportez vos animations de jauge.',
+            preview: 'Aperçu',
+            meterTitle: 'Titre de la Jauge',
+            meterSkin: 'Skin de la Jauge',
+            theme: 'Thème',
+            light: 'Clair',
+            dark: 'Sombre',
+            language: 'Langue',
+            scoreValue: 'Valeur du Score',
+            maxScore: 'Score Maximum',
+            backgroundColor: 'Couleur de Fond',
+            ratingRanges: 'Plages de Notation',
+            addRange: 'Ajouter Plage',
+            export: 'Exporter',
+            exporting: 'Exportation...',
+            exportInfo: 'L\'export crée une animation de 3 secondes.',
+            low: 'Bas',
+            medium: 'Moyen',
+            high: 'Haut',
+        }
+    },
+    de: {
+        name: 'Deutsch',
+        flag: '🇩🇪',
+        ui: {
+            title: 'Bewertungsanzeige',
+            subtitle: 'Erstellen, anpassen und exportieren Sie Ihre Bewertungsanimationen.',
+            preview: 'Vorschau',
+            meterTitle: 'Anzeigetitel',
+            meterSkin: 'Anzeige-Skin',
+            theme: 'Thema',
+            light: 'Hell',
+            dark: 'Dunkel',
+            language: 'Sprache',
+            scoreValue: 'Punktzahl',
+            maxScore: 'Maximalpunktzahl',
+            backgroundColor: 'Hintergrundfarbe',
+            ratingRanges: 'Bewertungsbereiche',
+            addRange: 'Bereich Hinzufügen',
+            export: 'Exportieren',
+            exporting: 'Exportiere...',
+            exportInfo: 'Export erstellt eine 3-Sekunden-Animation.',
+            low: 'Niedrig',
+            medium: 'Mittel',
+            high: 'Hoch',
+        }
+    },
+    ko: {
+        name: '한국어',
+        flag: '🇰🇷',
+        ui: {
+            title: '레이팅 미터 생성기',
+            subtitle: '레이팅 미터 애니메이션을 생성, 사용자 정의 및 내보내기.',
+            preview: '미리보기',
+            meterTitle: '미터 제목',
+            meterSkin: '미터 스킨',
+            theme: '테마',
+            light: '라이트',
+            dark: '다크',
+            language: '언어',
+            scoreValue: '점수 값',
+            maxScore: '최대 점수',
+            backgroundColor: '배경색',
+            ratingRanges: '평가 범위',
+            addRange: '범위 추가',
+            export: '내보내기',
+            exporting: '내보내는 중...',
+            exportInfo: '0에서 목표 점수까지 3초 애니메이션을 생성합니다.',
+            low: '낮음',
+            medium: '보통',
+            high: '높음',
+        }
+    },
+    vi: {
+        name: 'Tiếng Việt',
+        flag: '🇻🇳',
+        ui: {
+            title: 'Trình Tạo Đồng Hồ',
+            subtitle: 'Tạo, tùy chỉnh và xuất hoạt ảnh đồng hồ đánh giá.',
+            preview: 'Xem trước',
+            meterTitle: 'Tiêu đề Đồng hồ',
+            meterSkin: 'Giao diện Đồng hồ',
+            theme: 'Chủ đề',
+            light: 'Sáng',
+            dark: 'Tối',
+            language: 'Ngôn ngữ',
+            scoreValue: 'Giá trị Điểm',
+            maxScore: 'Điểm Tối đa',
+            backgroundColor: 'Màu Nền',
+            ratingRanges: 'Phạm vi Đánh giá',
+            addRange: 'Thêm Phạm vi',
+            export: 'Xuất',
+            exporting: 'Đang xuất...',
+            exportInfo: 'Xuất tạo hoạt ảnh 3 giây từ 0 đến điểm mục tiêu.',
+            low: 'Thấp',
+            medium: 'Trung bình',
+            high: 'Cao',
+        }
+    },
+    it: {
+        name: 'Italiano',
+        flag: '🇮🇹',
+        ui: {
+            title: 'Generatore di Misuratore',
+            subtitle: 'Crea, personalizza ed esporta le animazioni del misuratore.',
+            preview: 'Anteprima',
+            meterTitle: 'Titolo del Misuratore',
+            meterSkin: 'Skin del Misuratore',
+            theme: 'Tema',
+            light: 'Chiaro',
+            dark: 'Scuro',
+            language: 'Lingua',
+            scoreValue: 'Valore del Punteggio',
+            maxScore: 'Punteggio Massimo',
+            backgroundColor: 'Colore di Sfondo',
+            ratingRanges: 'Intervalli di Valutazione',
+            addRange: 'Aggiungi Intervallo',
+            export: 'Esporta',
+            exporting: 'Esportazione...',
+            exportInfo: 'L\'esportazione crea un\'animazione di 3 secondi.',
+            low: 'Basso',
+            medium: 'Medio',
+            high: 'Alto',
+        }
+    },
+    fa: {
+        name: 'فارسی',
+        flag: '🇮🇷',
+        ui: {
+            title: 'تولیدکننده نمودار امتیاز',
+            subtitle: 'انیمیشن‌های نمودار امتیاز خود را ایجاد، سفارشی‌سازی و صادر کنید.',
+            preview: 'پیش‌نمایش',
+            meterTitle: 'عنوان نمودار',
+            meterSkin: 'پوسته نمودار',
+            theme: 'تم',
+            light: 'روشن',
+            dark: 'تاریک',
+            language: 'زبان',
+            scoreValue: 'مقدار امتیاز',
+            maxScore: 'حداکثر امتیاز',
+            backgroundColor: 'رنگ پس‌زمینه',
+            ratingRanges: 'محدوده‌های امتیاز',
+            addRange: 'افزودن محدوده',
+            export: 'صادرات',
+            exporting: 'در حال صادرات...',
+            exportInfo: 'صادرات یک انیمیشن 3 ثانیه‌ای ایجاد می‌کند.',
+            low: 'کم',
+            medium: 'متوسط',
+            high: 'زیاد',
+        }
+    },
+    pl: {
+        name: 'Polski',
+        flag: '🇵🇱',
+        ui: {
+            title: 'Generator Miernika',
+            subtitle: 'Twórz, dostosowuj i eksportuj animacje miernika ocen.',
+            preview: 'Podgląd',
+            meterTitle: 'Tytuł Miernika',
+            meterSkin: 'Skórka Miernika',
+            theme: 'Motyw',
+            light: 'Jasny',
+            dark: 'Ciemny',
+            language: 'Język',
+            scoreValue: 'Wartość Wyniku',
+            maxScore: 'Maksymalny Wynik',
+            backgroundColor: 'Kolor Tła',
+            ratingRanges: 'Zakresy Ocen',
+            addRange: 'Dodaj Zakres',
+            export: 'Eksportuj',
+            exporting: 'Eksportowanie...',
+            exportInfo: 'Eksport tworzy 3-sekundową animację.',
+            low: 'Niski',
+            medium: 'Średni',
+            high: 'Wysoki',
+        }
+    },
+    uk: {
+        name: 'Українська',
+        flag: '🇺🇦',
+        ui: {
+            title: 'Генератор Рейтингу',
+            subtitle: 'Створюйте, налаштовуйте та експортуйте анімації рейтингу.',
+            preview: 'Попередній перегляд',
+            meterTitle: 'Заголовок',
+            meterSkin: 'Скін',
+            theme: 'Тема',
+            light: 'Світла',
+            dark: 'Темна',
+            language: 'Мова',
+            scoreValue: 'Значення',
+            maxScore: 'Максимум',
+            backgroundColor: 'Колір фону',
+            ratingRanges: 'Діапазони',
+            addRange: 'Додати',
+            export: 'Експорт',
+            exporting: 'Експорт...',
+            exportInfo: 'Експорт створює 3-секундну анімацію.',
+            low: 'Низький',
+            medium: 'Середній',
+            high: 'Високий',
+        }
+    },
+    nl: {
+        name: 'Nederlands',
+        flag: '🇳🇱',
+        ui: {
+            title: 'Beoordelingsmeter',
+            subtitle: 'Maak, pas aan en exporteer je beoordelingsmeter animaties.',
+            preview: 'Voorbeeld',
+            meterTitle: 'Metertitel',
+            meterSkin: 'Meter Skin',
+            theme: 'Thema',
+            light: 'Licht',
+            dark: 'Donker',
+            language: 'Taal',
+            scoreValue: 'Scorewaarde',
+            maxScore: 'Max Score',
+            backgroundColor: 'Achtergrondkleur',
+            ratingRanges: 'Beoordelingsbereiken',
+            addRange: 'Bereik Toevoegen',
+            export: 'Exporteren',
+            exporting: 'Exporteren...',
+            exportInfo: 'Export maakt een 3-seconden animatie.',
+            low: 'Laag',
+            medium: 'Gemiddeld',
+            high: 'Hoog',
+        }
+    },
+    th: {
+        name: 'ไทย',
+        flag: '🇹🇭',
+        ui: {
+            title: 'ตัวสร้างมิเตอร์เรตติ้ง',
+            subtitle: 'สร้าง ปรับแต่ง และส่งออกแอนิเมชั่นมิเตอร์เรตติ้งของคุณ',
+            preview: 'ดูตัวอย่าง',
+            meterTitle: 'ชื่อมิเตอร์',
+            meterSkin: 'สกินมิเตอร์',
+            theme: 'ธีม',
+            light: 'สว่าง',
+            dark: 'มืด',
+            language: 'ภาษา',
+            scoreValue: 'ค่าคะแนน',
+            maxScore: 'คะแนนสูงสุด',
+            backgroundColor: 'สีพื้นหลัง',
+            ratingRanges: 'ช่วงการจัดอันดับ',
+            addRange: 'เพิ่มช่วง',
+            export: 'ส่งออก',
+            exporting: 'กำลังส่งออก...',
+            exportInfo: 'ส่งออกสร้างแอนิเมชั่น 3 วินาที',
+            low: 'ต่ำ',
+            medium: 'ปานกลาง',
+            high: 'สูง',
+        }
+    }
+};
