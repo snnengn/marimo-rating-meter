@@ -8,6 +8,7 @@ import { ExportControls } from './components/ExportControls';
 import { cn } from './lib/utils';
 import { Play } from 'lucide-react';
 import { SpeedInsights } from "@vercel/speed-insights/react"
+import { Analytics } from "@vercel/analytics/react"
 
 function App() {
   const [ranges, setRanges] = useState<RatingRange[]>([
@@ -192,6 +193,7 @@ function App() {
           © 2026 Marimo Rating Meter Generator - Free Online Tool
         </p>
       </footer>
+      <Analytics />
       <SpeedInsights />
     </div>
   );
