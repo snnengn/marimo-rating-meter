@@ -96,7 +96,7 @@ export const translations: Record<Language, {
         code: 'us',
         ui: {
             title: 'Rating Meter Generator',
-            subtitle: 'Create, customize, and export your rating meter animations.',
+            subtitle: 'Create viral animated rating meters for TikTok, Instagram & YouTube Reviews. Free & No Watermark.',
             preview: 'Preview',
             configuration: 'Configuration',
             meterTitle: 'Meter Title',

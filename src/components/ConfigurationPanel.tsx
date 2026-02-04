@@ -97,41 +97,47 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
     ];
 
     // Skin default colors mapping
-    const skinDefaults: Record<string, {
-        needleColor: string;
-        backgroundColor: string;
-        rangeColors: string[];
-    }> = {
-        pastel: {
-            needleColor: '#ff6b8b',
-            backgroundColor: '#0a0a0a',
-            rangeColors: ['#ffb3ba', '#bae1ff', '#baffc9', '#e0b3ff', '#ffe4b3']
-        },
-        neon: {
-            needleColor: '#00ffff',
-            backgroundColor: '#0a0a0a',
-            rangeColors: ['#ff00ff', '#00ffff', '#00ff00', '#ffff00', '#ff1493']
-        },
-        retro: {
-            needleColor: '#ff6b35',
-            backgroundColor: '#2d2d2d',
-            rangeColors: ['#ff6b35', '#f7c59f', '#efa00b', '#d65108', '#c1502e']
-        },
-        minimal: {
-            needleColor: '#333333',
-            backgroundColor: '#f5f5f5',
-            rangeColors: ['#e0e0e0', '#c0c0c0', '#a0a0a0', '#808080', '#606060']
-        },
-        cyber: {
-            needleColor: '#00ffff',
-            backgroundColor: '#000000',
-            rangeColors: ['#00ffff', '#ff00ff', '#ffff00', '#00ff00', '#ff0099']
-        },
+    const getSkinDefaults = (skin: string, theme: 'light' | 'dark') => {
+        const isLight = theme === 'light';
+
+        const defaults: Record<string, {
+            needleColor: string;
+            backgroundColor: string;
+            rangeColors: string[];
+        }> = {
+            pastel: {
+                needleColor: '#ff6b8b',
+                backgroundColor: isLight ? '#fff1f2' : '#0a0a0a',
+                rangeColors: ['#ffb3ba', '#bae1ff', '#baffc9', '#e0b3ff', '#ffe4b3']
+            },
+            neon: {
+                needleColor: isLight ? '#06b6d4' : '#00ffff',
+                backgroundColor: isLight ? '#f0fdfa' : '#0a0a0a',
+                rangeColors: ['#ff00ff', '#00ffff', '#00ff00', '#ffff00', '#ff1493']
+            },
+            retro: {
+                needleColor: '#ff6b35',
+                backgroundColor: isLight ? '#fff7ed' : '#2d2d2d',
+                rangeColors: ['#ff6b35', '#f7c59f', '#efa00b', '#d65108', '#c1502e']
+            },
+            minimal: {
+                needleColor: '#333333',
+                backgroundColor: isLight ? '#ffffff' : '#f5f5f5',
+                rangeColors: ['#e0e0e0', '#c0c0c0', '#a0a0a0', '#808080', '#606060']
+            },
+            cyber: {
+                needleColor: '#00ffff',
+                backgroundColor: isLight ? '#e0f2fe' : '#000000',
+                rangeColors: ['#00ffff', '#ff00ff', '#ffff00', '#00ff00', '#ff0099']
+            },
+        };
+
+        return defaults[skin];
     };
 
     // Handle skin change and apply default colors
     const handleSkinChange = (skin: string) => {
-        const defaults = skinDefaults[skin];
+        const defaults = getSkinDefaults(skin, settings.theme);
         if (defaults) {
             // Update settings with new skin and colors
             setSettings({
@@ -489,28 +495,25 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
                                     <div className="flex-1 space-y-1">
                                         <label className="text-xs text-slate-500 uppercase">{t.label}</label>
                                         <input
-                                            type="text"
                                             value={range.label}
                                             onChange={(e) => updateRange(range.id, { label: e.target.value })}
-                                            className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500 h-8"
+                                            className={cn("w-full rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500 h-8 border", inputBg)}
                                         />
                                     </div>
                                     <div className="w-16 space-y-1">
                                         <label className="text-xs text-slate-500 uppercase">{t.min}</label>
                                         <input
-                                            type="number"
                                             value={range.min}
                                             onChange={(e) => updateRange(range.id, { min: Number(e.target.value) })}
-                                            className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500 h-8"
+                                            className={cn("w-full rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500 h-8 border", inputBg)}
                                         />
                                     </div>
                                     <div className="w-16 space-y-1">
                                         <label className="text-xs text-slate-500 uppercase">{t.max}</label>
                                         <input
-                                            type="number"
                                             value={range.max}
                                             onChange={(e) => updateRange(range.id, { max: Number(e.target.value) })}
-                                            className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500 h-8"
+                                            className={cn("w-full rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500 h-8 border", inputBg)}
                                         />
                                     </div>
                                     <div className="space-y-1">
