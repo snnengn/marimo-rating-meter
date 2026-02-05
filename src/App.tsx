@@ -12,14 +12,16 @@ import { Analytics } from "@vercel/analytics/react"
 
 function App() {
   const [ranges, setRanges] = useState<RatingRange[]>([
-    { id: '1', min: 0, max: 30, label: 'Low', color: '#ef4444' },
-    { id: '2', min: 30, max: 70, label: 'Medium', color: '#eab308' },
-    { id: '3', min: 70, max: 100, label: 'High', color: '#22c55e' },
+    { id: '1', min: 0, max: 20, label: 'Very Low', color: '#9c1313' },
+    { id: '2', min: 20, max: 40, label: 'Low', color: '#ef4444' },
+    { id: '3', min: 40, max: 60, label: 'Medium', color: '#eab308' },
+    { id: '4', min: 60, max: 80, label: 'High', color: '#7ec522' },
+    { id: '5', min: 80, max: 100, label: 'Very High', color: '#0da519' }
   ]);
 
   const [settings, setSettings] = useState<MeterSettings>({
-    title: 'Customer Satisfaction',
-    scoreValue: 75,
+    title: 'Rating Title',
+    scoreValue: 50,
     maxScore: 100,
     theme: 'dark',
     skin: 'pastel',

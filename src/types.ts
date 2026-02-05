@@ -87,6 +87,11 @@ export interface TranslationUI {
     needleColor: string;
     advancedSettings: string;
     meterShape: string;
+    // Title customization labels
+    titleFontSize: string;
+    titleColor: string;
+    titlePosition: string;
+    showTitle: string;
 }
 
 export const translations: Record<Language, {
@@ -136,6 +141,10 @@ export const translations: Record<Language, {
             needleColor: 'Needle Color',
             advancedSettings: 'Advanced Settings',
             meterShape: 'Meter Shape',
+            titleFontSize: 'Title Size',
+            titleColor: 'Title Color',
+            titlePosition: 'Vertical Position',
+            showTitle: 'Show Title',
         }
     },
     tr: {
@@ -179,6 +188,10 @@ export const translations: Record<Language, {
             needleColor: 'İbre Rengi',
             advancedSettings: 'Gelişmiş Ayarlar',
             meterShape: 'Metre Şekli',
+            titleFontSize: 'Başlık Boyutu',
+            titleColor: 'Başlık Rengi',
+            titlePosition: 'Dikey Konum',
+            showTitle: 'Başlığı Göster',
         }
     },
     zh: {
@@ -222,6 +235,10 @@ export const translations: Record<Language, {
             needleColor: '指针颜色',
             advancedSettings: '高级设置',
             meterShape: '仪表形状',
+            titleFontSize: '标题大小',
+            titleColor: '标题颜色',
+            titlePosition: '垂直位置',
+            showTitle: '显示标题',
         }
     },
     hi: {
@@ -265,6 +282,10 @@ export const translations: Record<Language, {
             needleColor: 'सुई का रंग',
             advancedSettings: 'उन्नत सेटिंग्स',
             meterShape: 'मीटर आकार',
+            titleFontSize: 'शीर्षक का आकार',
+            titleColor: 'शीर्षक का रंग',
+            titlePosition: 'लंबवत स्थिति',
+            showTitle: 'शीर्षक दिखाएं',
         }
     },
     es: {
@@ -308,6 +329,10 @@ export const translations: Record<Language, {
             needleColor: 'Color de Aguja',
             advancedSettings: 'Ajustes Avanzados',
             meterShape: 'Forma del Medidor',
+            titleFontSize: 'Tamaño del Título',
+            titleColor: 'Color del Título',
+            titlePosition: 'Posición Vertical',
+            showTitle: 'Mostrar Título',
         }
     },
     ar: {
@@ -351,6 +376,10 @@ export const translations: Record<Language, {
             needleColor: 'لون الإبرة',
             advancedSettings: 'إعدادات متقدمة',
             meterShape: 'شكل المقياس',
+            titleFontSize: 'حجم العنوان',
+            titleColor: 'لون العنوان',
+            titlePosition: 'الموضع الرأسي',
+            showTitle: 'إظهار العنوان',
         }
     },
     bn: {
@@ -394,6 +423,10 @@ export const translations: Record<Language, {
             needleColor: 'নিডল কালার',
             advancedSettings: 'উন্নত সেটিংস',
             meterShape: 'মিটার শেপ',
+            titleFontSize: 'শিরোনামের আকার',
+            titleColor: 'শিরোনামের রঙ',
+            titlePosition: 'উল্লম্ব অবস্থান',
+            showTitle: 'শিরোনাম দেখান',
         }
     },
     pt: {
@@ -437,6 +470,10 @@ export const translations: Record<Language, {
             needleColor: 'Cor da Agulha',
             advancedSettings: 'Ajustes Avançados',
             meterShape: 'Forma do Medidor',
+            titleFontSize: 'Tamanho do Título',
+            titleColor: 'Cor do Título',
+            titlePosition: 'Posição Vertical',
+            showTitle: 'Mostrar Título',
         }
     },
     ru: {
@@ -480,6 +517,10 @@ export const translations: Record<Language, {
             needleColor: 'Цвет стрелки',
             advancedSettings: 'Расширенные настройки',
             meterShape: 'Форма шкалы',
+            titleFontSize: 'Размер заголовка',
+            titleColor: 'Цвет заголовка',
+            titlePosition: 'Вертикальная позиция',
+            showTitle: 'Показать заголовок',
         }
     },
     ja: {
@@ -523,6 +564,10 @@ export const translations: Record<Language, {
             needleColor: '針の色',
             advancedSettings: '詳細設定',
             meterShape: 'メーターの形状',
+            titleFontSize: 'タイトルサイズ',
+            titleColor: 'タイトル色',
+            titlePosition: '垂直位置',
+            showTitle: 'タイトルを表示',
         }
     },
     fr: {
@@ -566,6 +611,10 @@ export const translations: Record<Language, {
             needleColor: 'Couleur de l\'aiguille',
             advancedSettings: 'Paramètres avancés',
             meterShape: 'Forme de la jauge',
+            titleFontSize: 'Taille du titre',
+            titleColor: 'Couleur du titre',
+            titlePosition: 'Position verticale',
+            showTitle: 'Afficher le titre',
         }
     },
     de: {
@@ -609,6 +658,10 @@ export const translations: Record<Language, {
             needleColor: 'Nadelfarbe',
             advancedSettings: 'Erweiterte Einstellungen',
             meterShape: 'Meterform',
+            titleFontSize: 'Titelgröße',
+            titleColor: 'Titelfarbe',
+            titlePosition: 'Vertikale Position',
+            showTitle: 'Titel anzeigen',
         }
     },
     ko: {
@@ -652,6 +705,10 @@ export const translations: Record<Language, {
             needleColor: '바늘 색상',
             advancedSettings: '고급 설정',
             meterShape: '미터 모양',
+            titleFontSize: '제목 크기',
+            titleColor: '제목 색상',
+            titlePosition: '수직 위치',
+            showTitle: '제목 표시',
         }
     },
     vi: {
@@ -695,6 +752,10 @@ export const translations: Record<Language, {
             needleColor: 'Màu kim',
             advancedSettings: 'Cài đặt nâng cao',
             meterShape: 'Hình dạng máy đo',
+            titleFontSize: 'Kích thước tiêu đề',
+            titleColor: 'Màu tiêu đề',
+            titlePosition: 'Vị trí dọc',
+            showTitle: 'Hiển thị tiêu đề',
         }
     },
     it: {
@@ -738,6 +799,10 @@ export const translations: Record<Language, {
             needleColor: 'Colore dell\'ago',
             advancedSettings: 'Impostazioni avanzate',
             meterShape: 'Forma del misuratore',
+            titleFontSize: 'Dimensione del titolo',
+            titleColor: 'Colore del titolo',
+            titlePosition: 'Posizione verticale',
+            showTitle: 'Mostra titolo',
         }
     },
     fa: {
@@ -781,6 +846,10 @@ export const translations: Record<Language, {
             needleColor: 'رنگ سوزن',
             advancedSettings: 'تنظیمات پیشرفته',
             meterShape: 'شکل متر',
+            titleFontSize: 'اندازه عنوان',
+            titleColor: 'رنگ عنوان',
+            titlePosition: 'موقعیت عمودی',
+            showTitle: 'نمایش عنوان',
         }
     },
     pl: {
@@ -824,6 +893,10 @@ export const translations: Record<Language, {
             needleColor: 'Kolor wskazówki',
             advancedSettings: 'Ustawienia zaawansowane',
             meterShape: 'Kształt miernika',
+            titleFontSize: 'Rozmiar tytułu',
+            titleColor: 'Kolor tytułu',
+            titlePosition: 'Pozycja pionowa',
+            showTitle: 'Pokaż tytuł',
         }
     },
     uk: {
@@ -867,6 +940,10 @@ export const translations: Record<Language, {
             needleColor: 'Колір стрілки',
             advancedSettings: 'Розширені налаштування',
             meterShape: 'Форма шкали',
+            titleFontSize: 'Розмір заголовка',
+            titleColor: 'Колір заголовка',
+            titlePosition: 'Вертикальна позиція',
+            showTitle: 'Показати заголовок',
         }
     },
     nl: {
@@ -910,6 +987,10 @@ export const translations: Record<Language, {
             needleColor: 'Naaldkleur',
             advancedSettings: 'Geavanceerde Instellingen',
             meterShape: 'Meter vorm',
+            titleFontSize: 'Titelgrootte',
+            titleColor: 'Titelkleur',
+            titlePosition: 'Verticale Positie',
+            showTitle: 'Titel Tonen',
         }
     },
     th: {
@@ -953,6 +1034,10 @@ export const translations: Record<Language, {
             needleColor: 'สีเข็ม',
             advancedSettings: 'การตั้งค่าขั้นสูง',
             meterShape: 'รูปร่างมิเตอร์',
+            titleFontSize: 'ขนาดชื่อเรื่อง',
+            titleColor: 'สีชื่อเรื่อง',
+            titlePosition: 'ตำแหน่งแนวตั้ง',
+            showTitle: 'แสดงชื่อเรื่อง',
         }
     }
 };

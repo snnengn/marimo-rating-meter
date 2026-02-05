@@ -52,10 +52,10 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
 
     // Center icon options
     const centerIcons: { value: CenterIcon; label: string; icon: string }[] = [
-        { value: 'heart', label: 'Heart', icon: '❤' },
+        { value: 'heart', label: 'Heart', icon: '❤️' },
         { value: 'star', label: 'Star', icon: '⭐' },
+        { value: 'diamond', label: 'Diamond', icon: '💎' },
         { value: 'circle', label: 'Circle', icon: '●' },
-        { value: 'diamond', label: 'Diamond', icon: '◆' },
         { value: 'none', label: 'None', icon: '○' },
     ];
 
@@ -190,7 +190,7 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className={cn("block text-sm font-medium mb-1", labelColor)}>
-                                Title Size
+                                {t.titleFontSize}
                             </label>
                             <input
                                 type="number"
@@ -205,7 +205,7 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
                         </div>
                         <div>
                             <label className={cn("block text-sm font-medium mb-1", labelColor)}>
-                                Title Color
+                                {t.titleColor}
                             </label>
                             <div className="flex items-center gap-2">
                                 <input
@@ -221,7 +221,7 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
 
                         <div className="col-span-2">
                             <label className={cn("block text-sm font-medium mb-1", labelColor)}>
-                                Title Vertical Position: {settings.titlePositionY || 0}px
+                                {t.titlePosition}: {settings.titlePositionY || 0}px
                             </label>
                             <input
                                 type="range"
@@ -247,7 +247,7 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
                             className="w-4 h-4 accent-blue-500 cursor-pointer"
                         />
                         <label htmlFor="showTitle" className={cn("text-sm cursor-pointer select-none", labelColor)}>
-                            Show Title
+                            {t.showTitle}
                         </label>
                     </div>
 

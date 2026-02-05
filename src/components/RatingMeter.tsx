@@ -140,9 +140,11 @@ const drawNeedle = (
     ctx.fill();
 
     ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = needleType === 'thin' ? 1.5 : 3;
+    ctx.lineWidth = 1;
     ctx.shadowBlur = 0;
+    ctx.globalAlpha = 0.5;
     ctx.stroke();
+    ctx.globalAlpha = 1;
 };
 
 // Helper function to draw center icon
@@ -179,7 +181,7 @@ const drawCenterIcon = (
     ctx.fill();
 
     ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 1;
     ctx.shadowBlur = 0;
     ctx.stroke();
 
@@ -192,7 +194,7 @@ const drawCenterIcon = (
     let iconChar = '';
     switch (centerIcon) {
         case 'heart':
-            iconChar = '❤';
+            iconChar = '❤️';
             break;
         case 'star':
             iconChar = '⭐';
@@ -201,7 +203,7 @@ const drawCenterIcon = (
             iconChar = '●';
             break;
         case 'diamond':
-            iconChar = '◆';
+            iconChar = '💎';
             break;
     }
 
@@ -480,7 +482,7 @@ export const RatingMeter = React.forwardRef<RatingMeterHandle, RatingMeterProps>
 
                 // Segment Borders
                 ctx.strokeStyle = skinSettings.borderColor;
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 1;
                 drawSegmentShape(); // Reuse shape for stroke
                 ctx.stroke();
 
@@ -522,9 +524,9 @@ export const RatingMeter = React.forwardRef<RatingMeterHandle, RatingMeterProps>
                 ctx.textAlign = 'center';
                 const defaultTitleColor = settings.theme === 'dark' ? '#fff' : '#000';
                 const titleColor = settings.titleColor || defaultTitleColor;
-                // Position relative to center. If 0, it's at center.
-                // Current top default is roughly -250 (calculated as -center + top_offset)
-                const titleY = centerY + (settings.titlePositionY || 0);
+                // Position relative to top (similar to gauge which is centerY - 350)
+                // Tube centerY is 300 (0.5), Gauge is 390 (0.65). To match top (40px), Tube needs -260.
+                const titleY = (centerY - 260) + (settings.titlePositionY || 0);
 
                 ctx.textBaseline = 'middle';
                 applyFontEffect(ctx, settings.fontEffect, settings.title, centerX, titleY, titleColor, isTransparent);
@@ -636,7 +638,7 @@ export const RatingMeter = React.forwardRef<RatingMeterHandle, RatingMeterProps>
 
                 // Border
                 ctx.strokeStyle = skinSettings.borderColor;
-                ctx.lineWidth = isActive ? 4 : 3;
+                ctx.lineWidth = 1;
                 ctx.shadowBlur = 0;
                 ctx.globalAlpha = 0.5; // 50% border opacity
                 ctx.stroke();
