@@ -27,12 +27,17 @@ function App() {
     language: 'en',
     // Advanced customization defaults
     needleType: 'arrow',
-    centerIcon: 'heart',
+    centerIcon: 'none',
     fontFamily: 'Inter',
     fontSize: 20,
     fontEffect: 'shadow',
-    needleColor: '#ff6b8b',
+    needleColor: '#bd0f0f',
     meterShape: 'gauge',
+    // Title defaults
+    titleFontSize: 24,
+    titleVisible: true,
+    titleColor: '#ffffff',
+    titlePositionY: 0,
   });
 
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);

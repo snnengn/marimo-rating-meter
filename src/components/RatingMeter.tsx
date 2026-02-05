@@ -64,7 +64,8 @@ const drawNeedle = (
     ctx: CanvasRenderingContext2D,
     needleType: NeedleType,
     needleLength: number,
-    needleColor: string
+    needleColor: string,
+    isTransparent: boolean
 ) => {
     const shaftWidth = needleType === 'bold' ? 20 : needleType === 'thin' ? 6 : 14;
     const shaftLength = needleLength - 22;
@@ -131,8 +132,11 @@ const drawNeedle = (
 
     ctx.closePath();
     ctx.fillStyle = grad;
-    ctx.shadowColor = needleColor;
-    ctx.shadowBlur = 15;
+
+    if (!isTransparent) {
+        ctx.shadowColor = needleColor;
+        ctx.shadowBlur = 15;
+    }
     ctx.fill();
 
     ctx.strokeStyle = '#ffffff';
@@ -145,13 +149,14 @@ const drawNeedle = (
 const drawCenterIcon = (
     ctx: CanvasRenderingContext2D,
     centerIcon: CenterIcon,
-    needleColor: string
+    needleColor: string,
+    isTransparent: boolean
 ) => {
     if (centerIcon === 'none') {
         // Just draw a simple circle
         ctx.beginPath();
-        ctx.arc(0, 0, 12, 0, Math.PI * 2);
-        const simpleGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 12);
+        ctx.arc(0, 0, 18, 0, Math.PI * 2);
+        const simpleGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 18);
         simpleGrad.addColorStop(0, '#ffffff');
         simpleGrad.addColorStop(1, '#888888');
         ctx.fillStyle = simpleGrad;
@@ -167,8 +172,10 @@ const drawCenterIcon = (
     baseGrad.addColorStop(0, adjustColorBrightness(needleColor, 60));
     baseGrad.addColorStop(1, adjustColorBrightness(needleColor, 20));
     ctx.fillStyle = baseGrad;
-    ctx.shadowColor = needleColor;
-    ctx.shadowBlur = 10;
+    if (!isTransparent) {
+        ctx.shadowColor = needleColor;
+        ctx.shadowBlur = 10;
+    }
     ctx.fill();
 
     ctx.strokeStyle = '#ffffff';
@@ -208,12 +215,15 @@ const applyFontEffect = (
     text: string,
     x: number,
     y: number,
-    fillColor: string
+    fillColor: string,
+    isTransparent: boolean
 ) => {
     switch (effect) {
         case 'shadow':
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-            ctx.shadowBlur = 4;
+            if (!isTransparent) {
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+                ctx.shadowBlur = 4;
+            }
             ctx.shadowOffsetX = 2;
             ctx.shadowOffsetY = 2;
             ctx.fillStyle = fillColor;
@@ -232,11 +242,15 @@ const applyFontEffect = (
             break;
 
         case 'glow':
-            ctx.shadowColor = fillColor;
-            ctx.shadowBlur = 15;
+            if (!isTransparent) {
+                ctx.shadowColor = fillColor;
+                ctx.shadowBlur = 15;
+            }
             ctx.fillStyle = fillColor;
             ctx.fillText(text, x, y);
-            ctx.fillText(text, x, y); // Double for stronger glow
+            if (!isTransparent) {
+                ctx.fillText(text, x, y); // Double for stronger glow
+            }
             ctx.shadowBlur = 0;
             break;
 
@@ -356,27 +370,37 @@ export const RatingMeter = React.forwardRef<RatingMeterHandle, RatingMeterProps>
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        const width = canvas.width;
-        const height = canvas.height;
+
+        const scale = exportMode ? 2 : 1;
+        const width = canvas.width / scale; // Logical width
+        const logicalHeight = canvas.height / scale; // Logical height
+
         const centerX = width / 2;
-        const centerY = settings.meterShape === 'tube' ? height * 0.5 : height * 0.65;
-        const radius = Math.min(width, height) * 0.4;
+        const centerY = settings.meterShape === 'tube' ? logicalHeight * 0.5 : logicalHeight * 0.65;
+        const radius = Math.min(width, logicalHeight) * 0.4;
+
+        ctx.save();
+        ctx.scale(scale, scale);
 
         // Clear canvas
         if (settings.backgroundColor === 'transparent') {
-            ctx.clearRect(0, 0, width, height);
+            ctx.clearRect(0, 0, width, logicalHeight);
         } else {
             ctx.fillStyle = settings.backgroundColor;
-            ctx.fillRect(0, 0, width, height);
+            ctx.fillRect(0, 0, width, logicalHeight);
         }
 
         // Filter valid ranges
         const validRanges = ranges.filter(r => r.max > r.min);
-        if (validRanges.length === 0) return;
+        if (validRanges.length === 0) {
+            ctx.restore();
+            return;
+        }
 
         const minVal = validRanges[0].min;
         const maxVal = validRanges[validRanges.length - 1].max;
         const totalRange = maxVal - minVal;
+        const isTransparent = settings.backgroundColor === 'transparent';
 
         // Common settings and calculations
         const skinSettings = SKIN_PALETTES[settings.skin] || SKIN_PALETTES.pastel;
@@ -433,8 +457,11 @@ export const RatingMeter = React.forwardRef<RatingMeterHandle, RatingMeterProps>
                     ctx.fillStyle = segmentColor;
 
                     // Add glow if explicit skin setting or if this is the currently active range
+                    // DISABLE GLOW if transparent background (causes artifacts in GIF)
                     const isActive = activeRange?.id === range.id;
-                    if (skinSettings.glow) {
+                    const isTransparent = settings.backgroundColor === 'transparent';
+
+                    if (skinSettings.glow && !isTransparent) {
                         ctx.shadowColor = segmentColor;
                         ctx.shadowBlur = isActive ? skinSettings.glowIntensity * 1.5 : skinSettings.glowIntensity * 0.5;
                     }
@@ -467,7 +494,7 @@ export const RatingMeter = React.forwardRef<RatingMeterHandle, RatingMeterProps>
                     : `bold ${Math.round(settings.fontSize * 0.8)}px "${settings.fontFamily}", sans-serif`;
                 ctx.textAlign = 'right';
                 ctx.textBaseline = 'middle';
-                applyFontEffect(ctx, settings.fontEffect, range.label, labelX, labelY, '#ffffff');
+                applyFontEffect(ctx, settings.fontEffect, range.label, labelX, labelY, '#ffffff', isTransparent);
 
                 currentY -= rangeHeight;
             });
@@ -479,25 +506,38 @@ export const RatingMeter = React.forwardRef<RatingMeterHandle, RatingMeterProps>
             ctx.save();
             ctx.translate(centerX + tubeWidth / 2 + 5, indicatorY);
             ctx.rotate(Math.PI); // Point left
-            drawNeedle(ctx, settings.needleType, 50, settings.needleColor);
+            drawNeedle(ctx, settings.needleType, 50, settings.needleColor, isTransparent);
             ctx.restore();
 
             // Center Icon (Bottom)
             ctx.save();
             ctx.translate(centerX, startY + 30);
-            drawCenterIcon(ctx, settings.centerIcon, settings.needleColor);
+            drawCenterIcon(ctx, settings.centerIcon, settings.needleColor, isTransparent);
             ctx.restore();
 
             // Title
-            ctx.font = `bold ${Math.round(settings.fontSize * 1.1)}px "${settings.fontFamily}", sans-serif`;
-            ctx.textAlign = 'center';
-            const titleColor = settings.theme === 'dark' ? '#fff' : '#000';
-            applyFontEffect(ctx, settings.fontEffect, settings.title, centerX, height * 0.08, titleColor);
+            if (settings.titleVisible !== false) {
+                const titleFontSize = settings.titleFontSize || Math.round(settings.fontSize * 1.1);
+                ctx.font = `bold ${titleFontSize}px "${settings.fontFamily}", sans-serif`;
+                ctx.textAlign = 'center';
+                const defaultTitleColor = settings.theme === 'dark' ? '#fff' : '#000';
+                const titleColor = settings.titleColor || defaultTitleColor;
+                // Position relative to center. If 0, it's at center.
+                // Current top default is roughly -250 (calculated as -center + top_offset)
+                const titleY = centerY + (settings.titlePositionY || 0);
+
+                ctx.textBaseline = 'middle';
+                applyFontEffect(ctx, settings.fontEffect, settings.title, centerX, titleY, titleColor, isTransparent);
+            }
+
+            // Score needs visible color fallback
+            const scoreColor = settings.theme === 'dark' ? '#fff' : '#000';
 
             // Score Value (near indicator)
             ctx.font = `bold ${Math.round(settings.fontSize * 2.2)}px "${settings.fontFamily}", sans-serif`;
             ctx.textAlign = 'left';
-            applyFontEffect(ctx, settings.fontEffect, Math.round(animatedScore).toString(), centerX + tubeWidth / 2 + 60, indicatorY, titleColor);
+            applyFontEffect(ctx, settings.fontEffect, Math.round(animatedScore).toString(), centerX + tubeWidth / 2 + 60, indicatorY, scoreColor, isTransparent);
+
 
 
         } else {
@@ -575,11 +615,15 @@ export const RatingMeter = React.forwardRef<RatingMeterHandle, RatingMeterProps>
                 ctx.closePath();
 
                 // Enhanced glow for active range
+                const isTransparent = settings.backgroundColor === 'transparent';
+
                 if (isActive) {
-                    ctx.shadowColor = segmentColor;
-                    ctx.shadowBlur = skinSettings.glowIntensity * 2;
+                    if (!isTransparent) {
+                        ctx.shadowColor = segmentColor;
+                        ctx.shadowBlur = skinSettings.glowIntensity * 2;
+                    }
                     ctx.globalAlpha = 1;
-                } else if (skinSettings.glow) {
+                } else if (skinSettings.glow && !isTransparent) {
                     ctx.shadowColor = segmentColor;
                     ctx.shadowBlur = skinSettings.glowIntensity;
                     ctx.globalAlpha = 0.85;
@@ -618,15 +662,23 @@ export const RatingMeter = React.forwardRef<RatingMeterHandle, RatingMeterProps>
                             ctx.translate(decX, decY);
                             ctx.rotate(Math.PI / 4);
                             ctx.fillStyle = 'rgba(0, 255, 255, 0.6)';
-                            ctx.shadowColor = '#00ffff';
-                            ctx.shadowBlur = 5;
+
+                            if (!isTransparent) {
+                                ctx.shadowColor = '#00ffff';
+                                ctx.shadowBlur = 5;
+                            }
+
                             ctx.fillRect(-2, -2, 4, 4);
                             ctx.restore();
                         } else if (settings.skin === 'neon') {
                             // Neon: bright dots with glow
                             ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                            ctx.shadowColor = '#ffffff';
-                            ctx.shadowBlur = 8;
+
+                            if (!isTransparent) {
+                                ctx.shadowColor = '#ffffff';
+                                ctx.shadowBlur = 8;
+                            }
+
                             ctx.beginPath();
                             ctx.arc(decX, decY, 3, 0, Math.PI * 2);
                             ctx.fill();
@@ -655,18 +707,28 @@ export const RatingMeter = React.forwardRef<RatingMeterHandle, RatingMeterProps>
                 ctx.shadowBlur = 0; // Clear any residual shadow from segments
 
                 // Apply font effect
-                applyFontEffect(ctx, settings.fontEffect, range.label, labelX, labelY, '#ffffff');
+                applyFontEffect(ctx, settings.fontEffect, range.label, labelX, labelY, '#ffffff', isTransparent);
             });
 
             // Title with custom font and effect
-            ctx.font = `bold ${Math.round(settings.fontSize * 1.1)}px "${settings.fontFamily}", sans-serif`;
-            ctx.textAlign = 'center';
-            const titleColor = settings.theme === 'dark' ? '#fff' : '#000';
-            applyFontEffect(ctx, settings.fontEffect, settings.title, centerX, height * 0.05, titleColor);
+            if (settings.titleVisible !== false) {
+                const titleFontSize = settings.titleFontSize || Math.round(settings.fontSize * 1.1);
+                ctx.font = `bold ${titleFontSize}px "${settings.fontFamily}", sans-serif`;
+                ctx.textAlign = 'center';
+                const defaultTitleColor = settings.theme === 'dark' ? '#fff' : '#000';
+                const titleColor = settings.titleColor || defaultTitleColor;
+                // Base is -350 from center (top area). Slider adds positive value.
+                const titleY = (centerY - 350) + (settings.titlePositionY || 0);
+
+                ctx.textBaseline = 'middle';
+                applyFontEffect(ctx, settings.fontEffect, settings.title, centerX, titleY, titleColor, isTransparent);
+            }
 
             // Score with custom font and effect
+            const scoreColor = settings.theme === 'dark' ? '#fff' : '#000';
             ctx.font = `bold ${Math.round(settings.fontSize * 2.2)}px "${settings.fontFamily}", sans-serif`;
-            applyFontEffect(ctx, settings.fontEffect, Math.round(animatedScore).toString(), centerX, centerY + 65, titleColor);
+            ctx.font = `bold ${Math.round(settings.fontSize * 2.2)}px "${settings.fontFamily}", sans-serif`;
+            applyFontEffect(ctx, settings.fontEffect, Math.round(animatedScore).toString(), centerX, centerY + 65, scoreColor, isTransparent);
 
 
             // Needle
@@ -679,23 +741,28 @@ export const RatingMeter = React.forwardRef<RatingMeterHandle, RatingMeterProps>
             ctx.rotate(needleAngle);
 
             // Draw needle based on type
-            drawNeedle(ctx, settings.needleType, needleLength, settings.needleColor);
+            drawNeedle(ctx, settings.needleType, needleLength, settings.needleColor, isTransparent);
 
             // Draw center icon
-            drawCenterIcon(ctx, settings.centerIcon, settings.needleColor);
+            drawCenterIcon(ctx, settings.centerIcon, settings.needleColor, isTransparent);
 
             ctx.restore();
         }
 
-    }, [ranges, settings, animatedScore]);
+        ctx.restore(); // Restore scale
+    }, [ranges, settings, animatedScore, exportMode, animationDuration]);
+
+    const baseSize = 600;
+    const scale = exportMode ? 2 : 1;
 
     return (
         <div className="flex justify-center items-center p-4">
             <canvas
                 ref={canvasRef}
-                width={600}
-                height={600}
+                width={baseSize * scale}
+                height={baseSize * scale}
                 className="max-w-full h-auto rounded-lg shadow-lg"
+                style={{ width: '100%', maxWidth: `${baseSize}px` }}
             />
         </div>
     );

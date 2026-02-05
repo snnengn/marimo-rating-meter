@@ -186,6 +186,71 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
                         />
                     </div>
 
+                    {/* Title Customization */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className={cn("block text-sm font-medium mb-1", labelColor)}>
+                                Title Size
+                            </label>
+                            <input
+                                type="number"
+                                min="12"
+                                max="60"
+                                value={settings.titleFontSize || 24}
+                                onChange={(e) =>
+                                    setSettings({ ...settings, titleFontSize: Number(e.target.value) })
+                                }
+                                className={cn("w-full rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 border", inputBg)}
+                            />
+                        </div>
+                        <div>
+                            <label className={cn("block text-sm font-medium mb-1", labelColor)}>
+                                Title Color
+                            </label>
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="color"
+                                    value={settings.titleColor || '#ffffff'}
+                                    onChange={(e) =>
+                                        setSettings({ ...settings, titleColor: e.target.value })
+                                    }
+                                    className="w-full h-[42px] rounded cursor-pointer border-0 p-0 bg-transparent"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="col-span-2">
+                            <label className={cn("block text-sm font-medium mb-1", labelColor)}>
+                                Title Vertical Position: {settings.titlePositionY || 0}px
+                            </label>
+                            <input
+                                type="range"
+                                min="0"
+                                max="550"
+                                value={settings.titlePositionY || 0}
+                                onChange={(e) =>
+                                    setSettings({ ...settings, titlePositionY: Number(e.target.value) })
+                                }
+                                className="w-full accent-blue-500"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            id="showTitle"
+                            checked={settings.titleVisible !== false}
+                            onChange={(e) =>
+                                setSettings({ ...settings, titleVisible: e.target.checked })
+                            }
+                            className="w-4 h-4 accent-blue-500 cursor-pointer"
+                        />
+                        <label htmlFor="showTitle" className={cn("text-sm cursor-pointer select-none", labelColor)}>
+                            Show Title
+                        </label>
+                    </div>
+
 
                     <div>
                         <label className={cn("block text-sm font-medium mb-1", labelColor)}>
@@ -530,7 +595,7 @@ export const ConfigurationPanel: React.FC<ConfigurationPanelProps> = ({
                         ))}
                     </div>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };

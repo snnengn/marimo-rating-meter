@@ -39,7 +39,8 @@ export const ExportControls: React.FC<ExportControlsProps> = ({ canvas, onStartE
             const width = canvas.width;
             const height = canvas.height;
             const duration = 3000; // 3 seconds matching animation
-            const fps = 60;
+            // Use 30 FPS for GIF to reduce size and speed up encoding, 60 FPS for video
+            const fps = exportFormat === 'gif' ? 30 : 60;
             const totalFrames = (duration / 1000) * fps;
 
             if (exportFormat === 'mp4') {

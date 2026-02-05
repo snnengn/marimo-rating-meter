@@ -42,6 +42,11 @@ export interface MeterSettings {
     fontEffect: FontEffect;
     needleColor: string;
     meterShape: MeterShape;
+    // Title customization
+    titleFontSize?: number;
+    titleVisible?: boolean;
+    titleColor?: string;
+    titlePositionY?: number;
 }
 
 export interface TranslationUI {
